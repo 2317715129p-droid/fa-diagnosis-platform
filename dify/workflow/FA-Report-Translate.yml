@@ -1,0 +1,202 @@
+app:
+  description: 服务器硬件 FA 失效分析报告专业英译工作流，输入中文四段式故障诊断报告，精准标准化翻译为工业英文，严格保留硬件专业术语、错误码、文档引用格式与原文结构，适配机房运维对外交付英文故障报告场景。
+  icon: f0bda0c6-99dd-48d7-9a9a-22aede42aa58
+  icon_background: ''
+  icon_type: image
+  mode: workflow
+  name: FA-Report-Translate
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.19@5b68617c637b62d31e7f33a9f5677b76e88f81868fb04a728e208588564b72ea
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1784167945737-source-1784168122858-target
+      source: '1784167945737'
+      sourceHandle: source
+      target: '1784168122858'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1784168122858-source-1784168274201-target
+      source: '1784168122858'
+      sourceHandle: source
+      target: '1784168274201'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: 中文FA诊断报告
+          max_length: 10000000000000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: report_zh
+      height: 109
+      id: '1784167945737'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: f114f1b0-0277-44a4-b4e7-2aea79811419
+          role: system
+          text: 'You are a professional server hardware failure analysis report translator.
+            Translate the Chinese FA report below into accurate English.
+
+
+            Rules:
+
+            1. Keep all technical terms in standard industry English (Electromigration,
+            Row Hammer, ECC, IPMI, MCE, PCIe, UE/CE etc.)
+
+            2. Strictly retain the original four-section Markdown structure, do not
+            split or merge paragraphs
+
+            3. Keep all document citation format unchanged: [Reference: xxx.md]
+
+            4. Do not modify any hex error codes, CPU/DIMM physical locations, severity
+            levels, numbers
+
+            5. Only output the translated full report, no extra explanation, no introductory
+            sentences'
+        - id: d0c51c32-153d-4aa1-bf45-0ae31dc3d918
+          role: user
+          text: 'Translate this Chinese FA failure analysis report into professional
+            engineering English:
+
+            {{{#1784167945737.report_zh#}}'
+        selected: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1784168122858'
+      position:
+        x: 387.0075988769531
+        y: 331
+      positionAbsolute:
+        x: 387.0075988769531
+        y: 331
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1784168122858'
+          - text
+          value_type: string
+          variable: text
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1784168274201'
+      position:
+        x: 731.0075988769531
+        y: 352
+      positionAbsolute:
+        x: 731.0075988769531
+        y: 352
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 25.483293243119476
+      y: 109.44630259209751
+      zoom: 0.6851755073328255
+  rag_pipeline_variables: []

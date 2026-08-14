@@ -1,0 +1,1012 @@
+app:
+  description: 服务器硬件失效分析（FA）自动化诊断工作流，支持 MCE、IPMI、ECC 硬件故障日志自动解析，通过 BGE 向量知识库混合检索匹配故障规范文档，依托
+    DeepSeek 大模型输出标准化四段式硬件故障诊断报告，包含故障定位、底层根因推导、现场处置方案与置信度评估。
+  icon: 71929eed-0688-42f4-9aa6-67f9ed1dffdf
+  icon_background: ''
+  icon_type: image
+  mode: workflow
+  name: FA 服务器硬件失效智能诊断工作流
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.19@5b68617c637b62d31e7f33a9f5677b76e88f81868fb04a728e208588564b72ea
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.57@a516d9cfacbddd2b8c2c641eb49744000f8981a1cb7a47e969b466aa43c7c911
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: code
+      id: 1783996928403-source-1783996747111-target
+      selected: false
+      source: '1783996928403'
+      sourceHandle: source
+      target: '1783996747111'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1783996760422-source-1783996783266-target
+      selected: false
+      source: '1783996760422'
+      sourceHandle: source
+      target: '1783996783266'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1784016390033-source-1783996760422-target
+      selected: false
+      source: '1784016390033'
+      sourceHandle: source
+      target: '1783996760422'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: code
+      id: 1783998693062-source-1784016390033-target
+      selected: false
+      source: '1783998693062'
+      sourceHandle: source
+      target: '1784016390033'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: 1783996747111-source-1784251418567-target
+      selected: false
+      source: '1783996747111'
+      sourceHandle: source
+      target: '1784251418567'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1784251418567-true-1783998693062-target
+      selected: false
+      source: '1784251418567'
+      sourceHandle: 'true'
+      target: '1783998693062'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1784251418567-true-1784016390033-target
+      selected: false
+      source: '1784251418567'
+      sourceHandle: 'true'
+      target: '1784016390033'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1784251418567-false-1784251513949-target
+      selected: false
+      source: '1784251418567'
+      sourceHandle: 'false'
+      target: '1784251513949'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: knowledge-retrieval
+      id: 1784251513949-source-1784251578820-target
+      selected: false
+      source: '1784251513949'
+      sourceHandle: source
+      target: '1784251578820'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: code
+      id: 1784251578820-source-1784016390033-target
+      source: '1784251578820'
+      sourceHandle: source
+      target: '1784016390033'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1784251513949-source-1784016390033-target
+      source: '1784251513949'
+      sourceHandle: source
+      target: '1784016390033'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: 原始故障日志
+          max_length: 999999999
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: log_text
+        - default: ''
+          hint: ''
+          label: 服务器 ID
+          max_length: 64
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: server_id
+      height: 134
+      id: '1783996928403'
+      position:
+        x: -194.59022427797908
+        y: -24.01978556741968
+      positionAbsolute:
+        x: -194.59022427797908
+        y: -24.01978556741968
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "from __future__ import annotations\n\nimport json\nimport re\nfrom\
+          \ typing import Any\n\n# ---------------------------------------------------------------------------\n\
+          # 降噪词表\n# ---------------------------------------------------------------------------\n\
+          \n_NOISE_PATTERNS = [\n    re.compile(p, re.IGNORECASE)\n    for p in [\n\
+          \        r\"\\bsystemd\\b\",\n        r\"\\bcron\\b\",\n        r\"\\bsshd\\\
+          b\",\n        r\"\\bdhcp\\b\",\n        r\"\\bNetworkManager\\b\",\n   \
+          \     r\"\\bext[234]\\b\",\n        r\"\\bxfs\\b\",\n        r\"\\bnfs\\\
+          b\",\n        r\"\\baudit\\b\",\n        r\"\\bkernel:\\s*\\[.*\\]\\s*(?:INFO|DEBUG)\"\
+          ,\n    ]\n]\n\n_HARDWARE_KEEP_PATTERNS = [\n    re.compile(p, re.IGNORECASE)\n\
+          \    for p in [\n        r\"Hardware\\s+Error\",\n        r\"Hardware\\\
+          s+event\",\n        r\"\\bMCE\\b\",\n        r\"Machine\\s+Check\",\n  \
+          \      r\"\\bEDAC\\b\",\n        r\"Temperature\",\n        r\"\\bFan\\\
+          b\",\n        r\"Voltage\",\n        r\"\\bSMART\\b\",\n        r\"pcieport\"\
+          ,\n        r\"\\bAER\\b\",\n        r\"NIC\\s+Link\",\n        r\"\\bmcelog\\\
+          b\",\n        r\"IPMI\",\n        r\"\\bSEL\\b\",\n        r\"Corrected\\\
+          s+error\",\n        r\"Uncorrected\",\n        r\"\\bSTATUS\\b\",\n    \
+          \    r\"\\bMCA:\",\n        r\"Error\\s+code\",\n        r\"\\bBank\\b\"\
+          ,\n        r\"DIMM\",\n        r\"\\bCPU\\s+\\d+\",\n    ]\n]\n\n# MCE 块起始\
+          \ / 续行\n_MCE_START = re.compile(\n    r\"Hardware\\s+event|Hardware\\s+Error|Machine\\\
+          s+Check|\\bmce:|^MCE\\s\",\n    re.IGNORECASE,\n)\n# Bug1: 全部 IGNORECASE，兼容\
+          \ IBM BANK / STATUS 等大写格式\n_MCE_CONTINUE = re.compile(\n    r\"STATUS|MCGSTATUS|MCGCAP|CPUID|MCA:|Bank|Error\\\
+          s+code|MISC|TIME|\"\n    r\"Corrected\\s+error|Uncorrected|SOCKETID|APICID|PROCESSOR|\"\
+          \n    r\"^\\s*CPU\\s+\\d+|^\\s*MCE\\s+\\d+|BINIT|timeout\",\n    re.IGNORECASE,\n\
+          )\n\n_EDAC_START = re.compile(r\"\\bEDAC\\b|MEMORY\\s+CONTROLLER|DIMM\\\
+          s+\\d+\", re.IGNORECASE)\n_EDAC_CONTINUE = re.compile(\n    r\"EDAC|DIMM|Channel|CSROW|mc\\\
+          d+|CE|UE|page:|offset:|grain:\",\n    re.IGNORECASE,\n)\n\n# Bug3: 词边界，避免\
+          \ AERR 误命中 AER\n_PCIE_START = re.compile(r\"pcieport|\\bAER\\b|PCIe\\s+Bus\\\
+          s+Error\", re.IGNORECASE)\n_PCIE_CONTINUE = re.compile(\n    r\"pcieport|\\\
+          bAER\\b|severity|severity_status|device_status|Uncorrected|\"\n    r\"Corrected|TLP|Receiver\\\
+          s+Error|Bad\\s+TLP\",\n    re.IGNORECASE,\n)\n\n_IPMI_SENSOR = re.compile(\n\
+          \    r\"(?:Temperature|Temp|Fan|Voltage|PSU|Power\\s+Supply).{0,40}\"\n\
+          \    r\"(?:critical|warning|failed|out\\s+of\\s+range|\\d+\\s*°?C|\\d+\\\
+          s*RPM)\",\n    re.IGNORECASE,\n)\n_SMART = re.compile(\n    r\"SMART|Disk|ata\\\
+          d+|nvme\\d+.*(fail|error|reallocated|UNC|temperature)\",\n    re.IGNORECASE,\n\
+          )\n_NIC = re.compile(\n    r\"NIC\\s+Link|eth\\d+.*(?:link\\s+down|carrier)|ixgbe|i40e|mlx\\\
+          d+.*error\",\n    re.IGNORECASE,\n)\n\n_RE_CPU = re.compile(r\"CPU\\s+(\\\
+          d+)\", re.IGNORECASE)\n_RE_BANK = re.compile(r\"BANK\\s+(\\d+)\", re.IGNORECASE)\n\
+          _RE_SOCKET = re.compile(r\"SOCKETID\\s+(\\d+)\", re.IGNORECASE)\n# Bug2:\
+          \ STATUS / Error code 均可选 0x 前缀\n_RE_ERROR_CODE = re.compile(r\"Error\\\
+          s+code\\s+(?:0x)?([0-9a-fA-F]+)\", re.IGNORECASE)\n_RE_STATUS = re.compile(r\"\
+          STATUS\\s+(?:0x)?([0-9a-fA-F]+)\", re.IGNORECASE)\n_RE_ERR_DESC = re.compile(r\"\
+          Error\\s+code\\s+\\w+:\\s*(.+)\", re.IGNORECASE)\n_RE_MCA_DESC = re.compile(r\"\
+          MCA:\\s*(.+)\", re.IGNORECASE)\n_RE_BINIT = re.compile(r\"(timeout\\s+BINIT.*)\"\
+          , re.IGNORECASE)\n\n\ndef _has_hardware_signal(line: str) -> bool:\n   \
+          \ return any(p.search(line) for p in _HARDWARE_KEEP_PATTERNS)\n\n\ndef _is_noise_only(line:\
+          \ str) -> bool:\n    if _has_hardware_signal(line):\n        return False\n\
+          \    return any(p.search(line) for p in _NOISE_PATTERNS)\n\n\ndef denoise_log(log_text:\
+          \ str) -> tuple[str, list[str]]:\n    \"\"\"过滤非硬件噪音行；含硬件关键词的行一律保留。\"\"\"\
+          \n    kept: list[str] = []\n    dropped: list[str] = []\n    for raw in\
+          \ (log_text or \"\").splitlines():\n        line = raw.rstrip()\n      \
+          \  if not line.strip():\n            continue\n        if _is_noise_only(line):\n\
+          \            dropped.append(line)\n            continue\n        # 无噪音词但也不像硬件行时：若整段几乎都是硬件上下文仍可能保留\n\
+          \        # MVP：无噪音则保留，避免误杀未收录格式\n        kept.append(line)\n    return \"\
+          \\n\".join(kept), dropped\n\n\ndef _normalize_hex(code: str | None) -> str:\n\
+          \    if not code:\n        return \"\"\n    code = code.strip()\n    if\
+          \ not code:\n        return \"\"\n    if code.lower().startswith(\"0x\"\
+          ):\n        return \"0x\" + code[2:].lower()\n    # 纯十六进制补 0x；短十进制报错码也按十六进制惯例补前缀\n\
+          \    if re.fullmatch(r\"[0-9a-fA-F]+\", code):\n        return \"0x\" +\
+          \ code.lower()\n    return code\n\n\ndef extract_mce_features(block_text:\
+          \ str) -> dict[str, str]:\n    \"\"\"从 MCE 块文本提取结构化特征（含 Bug1–4 修复）。\"\"\"\
+          \n    location_parts: list[str] = []\n\n    cpu_m = _RE_CPU.search(block_text)\n\
+          \    if cpu_m:\n        location_parts.append(f\"CPU {cpu_m.group(1)}\"\
+          )\n\n    bank_m = _RE_BANK.search(block_text)\n    if bank_m:\n        location_parts.append(f\"\
+          Bank {bank_m.group(1)}\")\n\n    if not location_parts:\n        sock_m\
+          \ = _RE_SOCKET.search(block_text)\n        if sock_m:\n            location_parts.append(f\"\
+          SOCKET {sock_m.group(1)}\")\n\n    location = \" \".join(location_parts)\
+          \ if location_parts else \"Unknown\"\n\n    error_code = \"\"\n    code_m\
+          \ = _RE_ERROR_CODE.search(block_text)\n    if code_m:\n        error_code\
+          \ = _normalize_hex(code_m.group(1))\n    else:\n        status_m = _RE_STATUS.search(block_text)\n\
+          \        if status_m:\n            error_code = _normalize_hex(status_m.group(1))\n\
+          \n    error_description = \"\"\n    desc_m = _RE_ERR_DESC.search(block_text)\n\
+          \    if desc_m:\n        error_description = desc_m.group(1).strip()\n \
+          \   else:\n        mca_m = _RE_MCA_DESC.search(block_text)\n        if mca_m:\n\
+          \            error_description = mca_m.group(1).strip()\n        else:\n\
+          \            binit_m = _RE_BINIT.search(block_text)\n            if binit_m:\n\
+          \                error_description = binit_m.group(1).strip()\n\n    # Bug4:\
+          \ Corrected 优先判定为 Warning\n    severity = \"Unknown\"\n    if re.search(r\"\
+          \\bCorrected\\b\", block_text, re.IGNORECASE):\n        severity = \"Warning\"\
+          \n    elif re.search(\n        r\"\\bUncorrected\\b|\\bFatal\\b|\\bIERR\\\
+          b|\\bUE\\b\",\n        block_text,\n        re.IGNORECASE,\n    ):\n   \
+          \     severity = \"Critical\"\n    elif error_description:\n        severity\
+          \ = \"Warning\"\n\n    return {\n        \"fault_type\": \"MCE\",\n    \
+          \    \"component\": \"CPU\",\n        \"location\": location,\n        \"\
+          error_code\": error_code,\n        \"error_description\": error_description,\n\
+          \        \"severity\": severity,\n        \"vendor\": \"Generic\",\n   \
+          \ }\n\n\ndef extract_edac_features(block_text: str) -> dict[str, str]:\n\
+          \    location = \"Unknown\"\n    ch = re.search(r\"Channel\\s*(\\d+)\",\
+          \ block_text, re.IGNORECASE)\n    dimm = re.search(r\"DIMM\\s*(\\d+)\",\
+          \ block_text, re.IGNORECASE)\n    parts = []\n    if ch:\n        parts.append(f\"\
+          Channel {ch.group(1)}\")\n    if dimm:\n        parts.append(f\"DIMM {dimm.group(1)}\"\
+          )\n    if parts:\n        location = \", \".join(parts)\n\n    if re.search(r\"\
+          \\bUE\\b|Uncorrected\", block_text, re.IGNORECASE):\n        code, severity\
+          \ = \"UE\", \"Critical\"\n    elif re.search(r\"\\bCE\\b|Corrected\", block_text,\
+          \ re.IGNORECASE):\n        code, severity = \"CE\", \"Warning\"\n    else:\n\
+          \        code, severity = \"\", \"Unknown\"\n\n    desc_m = re.search(r\"\
+          EDAC[^\\n]*\", block_text, re.IGNORECASE)\n    desc = desc_m.group(0).strip()\
+          \ if desc_m else \"EDAC memory error\"\n\n    return {\n        \"fault_type\"\
+          : \"Memory\",\n        \"component\": \"Memory\",\n        \"location\"\
+          : location,\n        \"error_code\": code,\n        \"error_description\"\
+          : desc,\n        \"severity\": severity,\n        \"vendor\": \"Generic\"\
+          ,\n    }\n\n\ndef extract_pcie_features(block_text: str) -> dict[str, str]:\n\
+          \    loc_m = re.search(r\"pcieport\\s+([0-9a-fA-F:.]+)\", block_text, re.IGNORECASE)\n\
+          \    location = loc_m.group(1) if loc_m else \"Unknown\"\n    severity =\
+          \ (\n        \"Critical\"\n        if re.search(r\"Uncorrected|Fatal\",\
+          \ block_text, re.IGNORECASE)\n        else \"Warning\"\n    )\n    desc_m\
+          \ = re.search(r\"(PCIe\\s+Bus\\s+Error|[^\\n]*\\bAER\\b[^\\n]*)\", block_text,\
+          \ re.IGNORECASE)\n    desc = desc_m.group(1).strip() if desc_m else \"PCIe\
+          \ AER error\"\n    return {\n        \"fault_type\": \"PCIe\",\n       \
+          \ \"component\": \"PCIe\",\n        \"location\": location,\n        \"\
+          error_code\": \"AER\",\n        \"error_description\": desc,\n        \"\
+          severity\": severity,\n        \"vendor\": \"Generic\",\n    }\n\n\ndef\
+          \ extract_ipmi_sensor(line: str) -> dict[str, str] | None:\n    if not _IPMI_SENSOR.search(line):\n\
+          \        return None\n    component = \"Temperature\"\n    if re.search(r\"\
+          \\bFan\\b\", line, re.IGNORECASE):\n        component = \"Fan\"\n    elif\
+          \ re.search(r\"Voltage|PSU|Power\", line, re.IGNORECASE):\n        component\
+          \ = \"Voltage\"\n\n    code = \"\"\n    m_temp = re.search(r\"(\\d+)\\s*°?C\"\
+          , line, re.IGNORECASE)\n    m_rpm = re.search(r\"(\\d+)\\s*RPM\", line,\
+          \ re.IGNORECASE)\n    if m_temp:\n        code = f\"{m_temp.group(1)}°C\"\
+          \n    elif m_rpm:\n        code = f\"{m_rpm.group(1)} RPM\"\n\n    severity\
+          \ = (\n        \"Critical\"\n        if re.search(r\"critical|failed\",\
+          \ line, re.IGNORECASE)\n        else \"Warning\"\n    )\n    return {\n\
+          \        \"fault_type\": \"IPMI_Sensor\",\n        \"component\": component,\n\
+          \        \"location\": \"Unknown\",\n        \"error_code\": code or \"\
+          SENSOR\",\n        \"error_description\": line.strip(),\n        \"severity\"\
+          : severity,\n        \"vendor\": \"Generic\",\n    }\n\n\ndef extract_smart(line:\
+          \ str) -> dict[str, str] | None:\n    if not _SMART.search(line):\n    \
+          \    return None\n    dev_m = re.search(r\"(nvme\\d+n\\d+|sd[a-z]+|ata\\\
+          d+)\", line, re.IGNORECASE)\n    location = dev_m.group(1) if dev_m else\
+          \ \"Unknown\"\n    severity = (\n        \"Critical\"\n        if re.search(r\"\
+          fail|UNC|error\", line, re.IGNORECASE)\n        else \"Warning\"\n    )\n\
+          \    return {\n        \"fault_type\": \"SMART\",\n        \"component\"\
+          : \"Disk\",\n        \"location\": location,\n        \"error_code\": \"\
+          SMART\",\n        \"error_description\": line.strip(),\n        \"severity\"\
+          : severity,\n        \"vendor\": \"Generic\",\n    }\n\n\ndef extract_nic(line:\
+          \ str) -> dict[str, str] | None:\n    if not _NIC.search(line):\n      \
+          \  return None\n    iface_m = re.search(r\"(eth\\d+|ens\\d+\\w*|enp\\S+)\"\
+          , line, re.IGNORECASE)\n    location = iface_m.group(1) if iface_m else\
+          \ \"Unknown\"\n    return {\n        \"fault_type\": \"Network\",\n    \
+          \    \"component\": \"NIC\",\n        \"location\": location,\n        \"\
+          error_code\": \"LINK\",\n        \"error_description\": line.strip(),\n\
+          \        \"severity\": \"Warning\",\n        \"vendor\": \"Generic\",\n\
+          \    }\n\n\ndef _is_pure_mce(cleaned: str) -> bool:\n    \"\"\"降噪后是否仅含 MCE（无\
+          \ EDAC / IPMI / SMART / PCIe / 网卡）。\"\"\"\n    if not cleaned.strip():\n\
+          \        return False\n    has_mce = bool(\n        re.search(r\"MCE|Machine\\\
+          s+Check|Hardware\\s+event|Hardware\\s+Error|mce:\", cleaned, re.I)\n   \
+          \ )\n    if not has_mce:\n        return False\n    has_other = bool(\n\
+          \        re.search(r\"\\bEDAC\\b\", cleaned, re.I)\n        or _IPMI_SENSOR.search(cleaned)\n\
+          \        or _SMART.search(cleaned)\n        or _PCIE_START.search(cleaned)\n\
+          \        or _NIC.search(cleaned)\n    )\n    return not has_other\n\n\n\
+          def _flush_block(\n    kind: str,\n    lines: list[str],\n    faults: list[dict[str,\
+          \ str]],\n) -> None:\n    if not lines:\n        return\n    text = \"\\\
+          n\".join(lines)\n    if kind == \"mce\":\n        faults.append(extract_mce_features(text))\n\
+          \    elif kind == \"edac\":\n        faults.append(extract_edac_features(text))\n\
+          \    elif kind == \"pcie\":\n        faults.append(extract_pcie_features(text))\n\
+          \n\ndef scan_faults(cleaned_log: str) -> tuple[list[dict[str, str]], list[str]]:\n\
+          \    \"\"\"多故障状态机：逐行扫描，返回 faults 与未识别行。\"\"\"\n    faults: list[dict[str,\
+          \ str]] = []\n    unmatched: list[str] = []\n\n    if _is_pure_mce(cleaned_log):\n\
+          \        # 快速通道：整段作为 MCE 输入\n        faults.append(extract_mce_features(cleaned_log))\n\
+          \        return faults, unmatched\n\n    in_mce = in_edac = in_pcie = False\n\
+          \    block: list[str] = []\n    kind = \"\"\n\n    def _close() -> None:\n\
+          \        nonlocal in_mce, in_edac, in_pcie, block, kind\n        if kind\
+          \ and block:\n            _flush_block(kind, block, faults)\n        in_mce\
+          \ = in_edac = in_pcie = False\n        block = []\n        kind = \"\"\n\
+          \n    for line in cleaned_log.splitlines():\n        # ---- 块内续行 ----\n\
+          \        if in_mce:\n            if _MCE_CONTINUE.search(line) or _MCE_START.search(line):\n\
+          \                block.append(line)\n                continue\n        \
+          \    _close()\n        elif in_edac:\n            if _EDAC_CONTINUE.search(line)\
+          \ or _EDAC_START.search(line):\n                block.append(line)\n   \
+          \             continue\n            _close()\n        elif in_pcie:\n  \
+          \          if _PCIE_CONTINUE.search(line) or _PCIE_START.search(line):\n\
+          \                block.append(line)\n                continue\n        \
+          \    _close()\n\n        # ---- 新块起始 ----\n        if _MCE_START.search(line):\n\
+          \            in_mce, kind = True, \"mce\"\n            block = [line]\n\
+          \            continue\n        if _EDAC_START.search(line):\n          \
+          \  in_edac, kind = True, \"edac\"\n            block = [line]\n        \
+          \    continue\n        if _PCIE_START.search(line):\n            in_pcie,\
+          \ kind = True, \"pcie\"\n            block = [line]\n            continue\n\
+          \n        # ---- 单行故障 ----\n        hit = extract_ipmi_sensor(line) or extract_smart(line)\
+          \ or extract_nic(line)\n        if hit:\n            faults.append(hit)\n\
+          \        else:\n            # 可能仍是 MCE 续行漏检（保守：含 CPU/BANK/STATUS 计入）\n \
+          \           if re.search(r\"STATUS|BANK|MCA:|Error\\s+code\", line, re.I):\n\
+          \                # 孤儿 MCE 线索：单独提一次\n                faults.append(extract_mce_features(line))\n\
+          \            else:\n                unmatched.append(line)\n\n    _close()\n\
+          \    return faults, unmatched\n\n\ndef _core_fields_missing(fault: dict[str,\
+          \ str]) -> bool:\n    return not fault.get(\"error_code\") or not fault.get(\"\
+          error_description\")\n\n\ndef build_rag_query(faults: list[dict[str, str]],\
+          \ cleaned_log: str) -> str:\n    \"\"\"构造 RAG 查询词；MCE 使用增强查询便于命中 Intel MCE\
+          \ 错误码表。\"\"\"\n    if not faults:\n        return (cleaned_log or \"\")[:200].strip()\
+          \ or \"hardware fault diagnosis\"\n\n    primary = faults[0]\n    ftype\
+          \ = primary.get(\"fault_type\", \"\")\n    code = primary.get(\"error_code\"\
+          , \"\")\n    component = primary.get(\"component\", \"\")\n    desc = primary.get(\"\
+          error_description\", \"\")\n\n    if ftype == \"MCE\":\n        # 增强查询：帮助检索\
+          \ Intel MCE 错误码对照表\n        parts = [\"MCE\", code, component, \"Intel Machine\
+          \ Check Error code\"]\n        if desc:\n            parts.append(desc[:80])\n\
+          \        query = \" \".join(p for p in parts if p).strip()\n    else:\n\
+          \        query = \" \".join(\n            p for p in [ftype, component,\
+          \ code, desc[:80], primary.get(\"location\", \"\")] if p\n        ).strip()\n\
+          \n    return query or (cleaned_log or \"\")[:200].strip() or \"hardware\
+          \ fault diagnosis\"\n\n\ndef build_llm_context(cleaned_log: str, faults:\
+          \ list[dict[str, str]]) -> str:\n    features = json.dumps(faults, ensure_ascii=False,\
+          \ indent=2)\n    return (\n        \"【降噪后的硬件日志】\\n\"\n        f\"{cleaned_log}\\\
+          n\\n\"\n        \"【正则提取的故障特征】\\n\"\n        f\"{features}\"\n    )\n\n\n\
+          # Dify 代码节点已声明的全部输出变量（须全部返回且均为 String，变量名 ≤30）\n_OUTPUT_DEFAULTS: dict[str,\
+          \ str] = {\n    \"fault_type\": \"Unknown\",\n    \"component\": \"Unknown\"\
+          ,\n    \"location\": \"Unknown\",\n    \"error_code\": \"\",\n    \"error_description\"\
+          : \"\",\n    \"severity\": \"Unknown\",\n    \"vendor\": \"Generic\",\n\
+          \    \"features_json\": \"[]\",\n    \"fault_count\": \"0\",\n    \"faults\"\
+          : \"[]\",\n    \"cleaned_log\": \"\",\n    \"rag_query\": \"hardware fault\
+          \ diagnosis\",\n    \"llm_context\": \"\",\n    \"llm_fallback_text\": \"\
+          \",\n    \"llm_fallback_needed\": \"false\",\n}\n\n\ndef _as_str(value:\
+          \ Any, default: str = \"\") -> str:\n    \"\"\"将任意返回值规范为 Dify String（禁止\
+          \ None / 非标量）。\"\"\"\n    if value is None:\n        return default\n  \
+          \  if isinstance(value, bool):\n        return \"true\" if value else \"\
+          false\"\n    if isinstance(value, (dict, list)):\n        return json.dumps(value,\
+          \ ensure_ascii=False)\n    return str(value)\n\n\ndef validate_outputs(result:\
+          \ dict[str, Any]) -> dict[str, str]:\n    \"\"\"校验并补齐全部输出参数，保证 Dify 输出参数校验通过。\n\
+          \n    - 缺键 → 用默认值补齐\n    - 多余键 → 丢弃（避免未声明参数触发校验失败）\n    - 所有值 → 强制转为非空合法\
+          \ String（允许空字符串字段）\n    \"\"\"\n    validated: dict[str, str] = {}\n   \
+          \ for key, default in _OUTPUT_DEFAULTS.items():\n        validated[key]\
+          \ = _as_str(result.get(key, default), default)\n\n    # rag_query / llm_context\
+          \ 下游强依赖，禁止最终仍为空\n    if not validated[\"rag_query\"].strip():\n        fallback_src\
+          \ = validated[\"cleaned_log\"] or validated[\"error_description\"] or \"\
+          hardware fault diagnosis\"\n        validated[\"rag_query\"] = fallback_src[:200]\n\
+          \    if not validated[\"llm_context\"].strip():\n        validated[\"llm_context\"\
+          ] = build_llm_context(\n            validated[\"cleaned_log\"],\n      \
+          \      [],\n        )\n\n    # llm_fallback_needed 只允许 true/false\n    flag\
+          \ = validated[\"llm_fallback_needed\"].strip().lower()\n    validated[\"\
+          llm_fallback_needed\"] = \"true\" if flag in {\"true\", \"1\", \"yes\"}\
+          \ else \"false\"\n\n    # 二次确认：声明的每个输出参数都已存在且为 str\n    missing = [k for\
+          \ k in _OUTPUT_DEFAULTS if k not in validated]\n    bad_type = [k for k,\
+          \ v in validated.items() if not isinstance(v, str)]\n    if missing or bad_type:\n\
+          \        raise ValueError(\n            f\"Output parameter validation failed:\
+          \ missing={missing}, bad_type={bad_type}\"\n        )\n    return validated\n\
+          \n\ndef main(log_text: str, server_id: str = \"\") -> dict:\n    \"\"\"\n\
+          \    Dify 代码节点入口。\n\n    Returns:\n        下游节点所需的全部字段（全部为 String，且与输出变量一一对应）。\n\
+          \    \"\"\"\n    _ = server_id  # MVP 未强制使用，保留签名兼容工作流\n\n    cleaned_log,\
+          \ _dropped = denoise_log(log_text or \"\")\n    faults, unmatched = scan_faults(cleaned_log)\
+          \ if cleaned_log else ([], [])\n\n    # 降级判断\n    llm_fallback_needed =\
+          \ \"false\"\n    if not faults:\n        llm_fallback_needed = \"true\"\n\
+          \    elif any(_core_fields_missing(f) for f in faults):\n        llm_fallback_needed\
+          \ = \"true\"\n\n    # 主故障（取首个；无则填 Unknown 占位，保证字段齐全）\n    if faults:\n \
+          \       primary: dict[str, str] = faults[0]\n    else:\n        primary\
+          \ = {\n            \"fault_type\": \"Unknown\",\n            \"component\"\
+          : \"Unknown\",\n            \"location\": \"Unknown\",\n            \"error_code\"\
+          : \"\",\n            \"error_description\": \"\",\n            \"severity\"\
+          : \"Unknown\",\n            \"vendor\": \"Generic\",\n        }\n\n    faults_json\
+          \ = json.dumps(faults, ensure_ascii=False)\n    rag_query = build_rag_query(faults,\
+          \ cleaned_log)\n    llm_context = build_llm_context(cleaned_log, faults)\n\
+          \    llm_fallback_text = \"\\n\".join(unmatched) if llm_fallback_needed\
+          \ == \"true\" else \"\"\n    if llm_fallback_needed == \"true\" and not\
+          \ llm_fallback_text:\n        llm_fallback_text = cleaned_log\n\n    raw\
+          \ = {\n        \"fault_type\": primary.get(\"fault_type\", \"Unknown\"),\n\
+          \        \"component\": primary.get(\"component\", \"Unknown\"),\n     \
+          \   \"location\": primary.get(\"location\", \"Unknown\"),\n        \"error_code\"\
+          : primary.get(\"error_code\", \"\"),\n        \"error_description\": primary.get(\"\
+          error_description\", \"\"),\n        \"severity\": primary.get(\"severity\"\
+          , \"Unknown\"),\n        \"vendor\": primary.get(\"vendor\", \"Generic\"\
+          ),\n        \"features_json\": faults_json,\n        \"fault_count\": str(len(faults)),\n\
+          \        \"faults\": faults_json,\n        \"cleaned_log\": cleaned_log,\n\
+          \        \"rag_query\": rag_query,\n        \"llm_context\": llm_context,\n\
+          \        \"llm_fallback_text\": llm_fallback_text,\n        \"llm_fallback_needed\"\
+          : llm_fallback_needed,\n    }\n    return validate_outputs(raw)\n\n\n# ---------------------------------------------------------------------------\n\
+          # 本地快速自检（Dify 中不会执行）\n# ---------------------------------------------------------------------------\n\
+          if __name__ == \"__main__\":\n    samples = [\n        (\n            \"\
+          std_mce\",\n            \"\"\"CPU 0: Machine Check Exception: 0000000000000004\n\
+          Bank 4: f200000000070005\nError code 0x0005: Internal parity error\n\"\"\
+          \",\n        ),\n        (\n            \"ibm_mce\",\n            \"\"\"\
+          Hardware event. This is not a software error.\nMCE 0\nCPU 16 BANK 0\nCorrected\
+          \ error\nSTATUS d8001dc000020e0f MCGSTATUS 0\nMCA: BUS Level-3 Generic Generic\
+          \ Other-transaction Request-did-not-timeout Error\n\"\"\",\n        ),\n\
+          \    ]\n    required = set(_OUTPUT_DEFAULTS)\n    for name, text in samples:\n\
+          \        out = main(text, \"srv-demo\")\n        assert set(out.keys())\
+          \ == required, f\"{name}: keys mismatch {set(out.keys()) ^ required}\"\n\
+          \        assert all(isinstance(v, str) for v in out.values()), f\"{name}:\
+          \ non-str values\"\n        print(\"=\" * 60, name)\n        print(\"keys_ok:\"\
+          , sorted(out.keys()))\n        print(\"error_code:\", out[\"error_code\"\
+          ])\n        print(\"location:\", out[\"location\"])\n        print(\"severity:\"\
+          , out[\"severity\"])\n        print(\"rag_query:\", out[\"rag_query\"])\n\
+          \        print(\"llm_fallback_needed:\", out[\"llm_fallback_needed\"])\n\
+          \        print(\"faults:\", out[\"faults\"])\n"
+        code_language: python3
+        outputs:
+          cleaned_log:
+            children: null
+            type: string
+          component:
+            children: null
+            type: string
+          error_code:
+            children: null
+            type: string
+          error_description:
+            children: null
+            type: string
+          fault_count:
+            children: null
+            type: string
+          fault_type:
+            children: null
+            type: string
+          faults:
+            children: null
+            type: string
+          features_json:
+            children: null
+            type: string
+          llm_context:
+            children: null
+            type: string
+          llm_fallback_needed:
+            children: null
+            type: string
+          llm_fallback_text:
+            children: null
+            type: string
+          location:
+            children: null
+            type: string
+          rag_query:
+            children: null
+            type: string
+          severity:
+            children: null
+            type: string
+          vendor:
+            children: null
+            type: string
+        retry_config:
+          max_retries: 3
+          retry_enabled: false
+          retry_interval: 1000
+        selected: false
+        title: 日志预处理
+        type: code
+        variables:
+        - value_selector:
+          - '1783996928403'
+          - log_text
+          value_type: string
+          variable: log_text
+        - value_selector:
+          - '1783996928403'
+          - server_id
+          value_type: string
+          variable: server_id
+      height: 51
+      id: '1783996747111'
+      position:
+        x: 172.59447738901315
+        y: -3.0197855674196816
+      positionAbsolute:
+        x: 172.59447738901315
+        y: -3.0197855674196816
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1784016390033'
+          - full_system_prompt
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: 94425207-b5f4-43bc-9180-626b1390fa85
+          role: system
+          text: '你是一名部署在移动机房内网的资深服务器硬件失效分析（FA）工程师。你必须严格依据上下文中的故障日志原文{{#1784016390033.full_system_prompt#}}、特征提取结果和知识库参考内容进行严谨推导。
+
+
+            ## 核心限制原则（不可触碰）
+
+            1. 彻底杜绝模糊推测。确定的结论使用“判断为...”，推测性结论使用“可能为...，建议进一步确认”。
+
+            2. 强行实施事实依赖。所有物理根因推导必须完全基于知识库召回的事实，若知识库未覆盖此错误码，必须直接输出既定话术：“无法定位，需人工硬件检测”，严禁自行续写。
+
+            3. 标注证据溯源。在每一条推论和建议的句尾，必须显式标注依据的知识库文档名称，格式为 `[依据：《文档名.md》]`。
+
+            4. 格式严格遵循。必须严格按照下方的四段式Markdown结构输出报告，严禁添加任何额外章节、引导语或后缀。
+
+
+            ## 输出格式规范（五段式，严禁删减）
+
+
+            你必须为特征JSON数组中的每一个故障独立生成报告。每个故障按以下格式输出。
+
+
+            ### 【故障现象定位】
+
+            **（故障 N）**
+
+            - 故障部件：[必须使用特征JSON中的 component 字段值]
+
+            - 物理位置：[必须使用特征JSON中的 location 字段值，若为空则填"无法定位"]
+
+            - 报错代码：[必须使用特征JSON中的 error_code 字段值]
+
+            - 故障等级：[必须使用特征JSON中的 severity 字段值，Critical→严重，Warning→预警]
+
+
+            ### 【物理根因推导】
+
+            **（故障 N）**
+
+            请从微电子与硬件可靠性角度分析失效的深层物理成因（例如：单粒子翻转SEU、电迁移、热疲劳、介质击穿、金手指氧化、Row Hammer效应）。每一条推导后必须标注依据。
+
+
+            ### 【工程处置建议】
+
+            **（故障 N）**
+
+            1. 紧急处置：值班员现场可立即执行的操作（如：业务迁移、下线观察）。
+
+            2. 根治方案：备件调拨与硬件更换指引（如：携带32GB内存前往A栋3楼更换DIMM_A1插槽）。
+
+            3. 验证方法：硬件更换后上电的确认和消警步骤。
+
+
+            ### 【置信度评估】
+
+            **（故障 N）**
+
+            - 诊断置信度：[高 / 中 / 低]
+
+            - 说明：明确指出本次诊断对知识库参考内容的覆盖程度。
+
+
+            ---
+
+
+            ## 多故障处理规则（不可违反）
+
+
+            1. 读取特征提取JSON数组中的**每一个**元素。
+
+            2. 对**每一个**故障，独立生成上述四个章节（【故障现象定位】、【物理根因推导】、【工程处置建议】、【置信度评估】）。
+
+            3. 按故障1、故障2、故障3...的顺序依次输出。
+
+            4. **禁止只输出第一个故障就结束。**
+
+            5. **禁止合并多个故障到一段。**
+
+            6. **禁止跳过任何故障。**
+
+
+            所有故障输出完毕后，再输出一个统一的【本次诊断总结】章节。
+
+
+            ### 【本次诊断总结】
+
+            对上述所有故障进行汇总说明，包括：
+
+            - 本次共诊断出多少个故障
+
+            - 哪些故障可以基于知识库给出高置信度诊断
+
+            - 哪些故障因知识库覆盖不足需人工进一步检测
+
+            - 是否存在关联性故障（如温度告警可能由风扇故障引起），如有则指出关联关系
+
+            现在，请直接基于上下文中的信息生成报告，不要索要任何额外信息，不要输出任何开场白。'
+        - id: 7cde6cfb-64cc-4f92-8cad-9af498f05d91
+          role: user
+          text: 请直接输出诊断报告，不要输出任何开场白或解释。
+        selected: false
+        structured_output_enabled: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1783996760422'
+      position:
+        x: 1232.1672505854744
+        y: 251.99075874226747
+      positionAbsolute:
+        x: 1232.1672505854744
+        y: 251.99075874226747
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        outputs:
+        - value_selector:
+          - '1783996760422'
+          - text
+          value_type: string
+          variable: result
+        selected: false
+        title: 输出
+        type: end
+      height: 87
+      id: '1783996783266'
+      position:
+        x: 1607.2510905341203
+        y: 251.99075874226747
+      positionAbsolute:
+        x: 1607.2510905341203
+        y: 251.99075874226747
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        dataset_ids:
+        - NpZ+riUkPCTa1nOpVPm05YW0hofIe64WTd9gWg1ywbwkDarl/m0YyEJ8cjs198My
+        multiple_retrieval_config:
+          reranking_enable: false
+          reranking_mode: weighted_score
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: bge-m3
+              embedding_provider_name: langgenius/openai_api_compatible/openai_api_compatible
+              vector_weight: 0.7
+            weight_type: customized
+        query_attachment_selector: []
+        query_variable_selector:
+        - '1783996747111'
+        - rag_query
+        retrieval_mode: multiple
+        selected: false
+        title: 知识检索
+        type: knowledge-retrieval
+      height: 89
+      id: '1783998693062'
+      position:
+        x: 814.884986523899
+        y: 29.52291889697611
+      positionAbsolute:
+        x: 814.884986523899
+        y: 29.52291889697611
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "def main(llm_context: str = None, knowledge_result: str = None, llm_context1:\
+          \ str = None, knowledge_result1: str = None) -> dict:\n\n    # 根据输入选择有效的上下文和知识库结果\n\
+          \    if llm_context is not None and knowledge_result is not None:\n    \
+          \    final_llm_context = llm_context\n        final_knowledge_result = knowledge_result\n\
+          \    elif llm_context1 is not None and knowledge_result1 is not None:\n\
+          \        final_llm_context = llm_context1\n        final_knowledge_result\
+          \ = knowledge_result1\n    else:\n        final_llm_context = \"\"\n   \
+          \     final_knowledge_result = \"\"\n\n    # 构建完整的 System Prompt，将上下文数据直接嵌入其中\n\
+          \    full_system_prompt = f\"\"\" 你是一名拥有 10 年以上经验的资深服务器硬件失效分析工程师，现服务于大型数据中心。你必须严格依据下面的故障日志原文、特征提取结果和知识库参考内容进行严谨推导，生成专业、可操作的\
+          \ FA 诊断报告。\n⚠️ 最高优先级：字段使用规则\n\n故障部件：必须使用特征提取 JSON 中 component 字段的值。\n\n\
+          物理位置：必须使用特征提取 JSON 中 location 字段的值。\n\n报错代码：必须使用特征提取 JSON 中 error_code 字段的值。\n\
+          \n故障等级：必须使用特征提取 JSON 中 severity 字段的值（Critical→严重，Warning→警告，Info→正常）。\n\n\
+          ⚠️ 多故障处理规则\n\n读取特征提取 JSON 数组中的每一个元素。\n\n对每一个故障独立生成诊断报告，按故障 1、故障 2... 依次输出。\n\
+          \n禁止只输出第一个故障。禁止合并多个故障到一段。禁止跳过任何故障。\n\n核心限制原则\n\n确定结论使用 \"判断为...\"，推测结论使用\
+          \ \"可能为...，建议进一步确认\"。\n\n所有根因推导必须基于知识库事实。知识库未覆盖时，输出：\"无法定位，需人工硬件检测\"。\n\n\
+          每条推论标注依据：[依据：《文档名.md》]。\n\n输出格式（每个故障独立一节）\n【故障 N：{{component}} - {{location}}】\n\
+          \n故障部件：{{component}}\n\n物理位置：{{location}}\n\n报错代码：{{error_code}}\n\n故障等级：{{severity}}\n\
+          \n物理根因推导：（从微电子角度分析，标注依据）\n工程处置建议：\n\n紧急处置：\n\n根治方案：\n\n验证方法：\n\n【置信度评估（汇总）】\n\
+          \n诊断置信度：[高 / 中 / 低]\n\n说明：本次共诊断出 N 个故障...\n\n以下是本次诊断的上下文数据：\n{final_llm_context}\n\
+          知识库参考（相关文档切片）\n{final_knowledge_result}\n\n\"\"\"\n    return {\n      \
+          \  \"full_system_prompt\": full_system_prompt\n    }"
+        code_language: python3
+        outputs:
+          full_system_prompt:
+            children: null
+            type: string
+        selected: false
+        title: 结合
+        type: code
+        variables:
+        - value_selector:
+          - '1783996747111'
+          - llm_context
+          value_type: string
+          variable: llm_context
+        - value_selector:
+          - '1783998693062'
+          - result
+          value_type: array[object]
+          variable: knowledge_result
+        - value_selector:
+          - '1784251513949'
+          - structured_output
+          - llm_context
+          value_type: object
+          variable: llm_context1
+        - value_selector:
+          - '1784251578820'
+          - result
+          value_type: array[object]
+          variable: knowledge_result1
+      height: 51
+      id: '1784016390033'
+      position:
+        x: 909.5276953904599
+        y: 258.09001706950215
+      positionAbsolute:
+        x: 909.5276953904599
+        y: 258.09001706950215
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: bb1333ce-4d2a-4e8b-aa03-3c6514972e27
+            value: 'false'
+            varType: string
+            variable_selector:
+            - '1783996747111'
+            - llm_fallback_needed
+          id: 'true'
+          logical_operator: and
+        selected: false
+        title: 条件分支
+        type: if-else
+      height: 147
+      id: '1784251418567'
+      position:
+        x: 489.2748140247653
+        y: -3.0197855674196816
+      positionAbsolute:
+        x: 489.2748140247653
+        y: -3.0197855674196816
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1783996928403'
+          - log_text
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 170092df-a1aa-4eec-b18a-87120240de0a
+          role: system
+          text: "# 角色定位\n你是资深服务器硬件失效分析(FA)日志解析专家，专门处理正则表达式无法识别、格式混乱、缺失关键字段的硬件原始日志，目标是把杂乱日志标准化提取为统一故障结构体，自动生成下游知识库检索用rag_query、LLM诊断上下文llm_context，输出严格标准JSON。{{#context#}}\n\
+            \n# 业务背景\n上游正则解析器识别失败，说明当前日志存在以下问题：日志行错乱、厂商自定义日志格式、缺少标准MCE/EDAC/PCIe关键字、多故障混杂、报错字段缺失、非标准SEL传感器文本。你需要人工理解文本语义，还原硬件故障结构化信息。\n\
+            \n# 强制输出顶层规则（违反任意一条判定输出失效）\n1. 仅返回纯JSON字符串，禁止任何解释、标题、换行注释、markdown、```代码块、前置/后置多余文字、思考过程。\n\
+            2. 顶层JSON固定仅有两个key，不可新增、删除、修改键名：\n{\n    \"rag_query\": \"用于RAG知识库检索的查询词，格式为：错误码\
+            \ 部件 描述。多条故障使用 ` | ` 分隔\",\n    \"llm_context\": \"## 故障日志原文\\n{原始完整日志}\\\
+            n\\n## LLM 提取的故障信息\\n[标准故障JSON数组]\"\n}\n\n# 内嵌故障对象固定结构（llm_context内数组每一项必须遵守）\n\
+            单条故障JSON字段，枚举值严格限制，不可自定义内容：\n{\n    \"fault_type\": \"MCE / EDAC / PCIe\
+            \ / IPMI_Sensor / SMART / Network / Unknown\",\n    \"component\": \"\
+            CPU / Memory / PCIe / Fan / Voltage / Disk / NIC / Unknown\",\n    \"\
+            location\": \"硬件物理位置，无定位信息填 Unknown\",\n    \"error_code\": \"十六进制错误码统一0x小写；CE/UE/AER/SENSOR/LINK；无编码填空字符串\"\
+            ,\n    \"error_description\": \"故障核心概括，80字符以内，保留硬件专业术语\",\n    \"severity\"\
+            : \"Critical / Warning / Unknown\",\n    \"vendor\": \"Generic\"\n}\n\n\
+            # rag_query 拼接强制规则\n1. 单条故障模板：`错误码 部件 故障描述`\n2. 多条故障使用 ` | ` 作为分隔符，分隔符前后必须带空格\n\
+            3. 无任何硬件故障时，rag_query填充原始日志前200个字符\n4. 错误码必须标准化（0x小写前缀），不可省略、大写\n\n# llm_context\
+            \ 构造强制规则\n1. 固定分为两大块：\n   第一块标题：## 故障日志原文，下方粘贴完整输入日志文本\n   第二块标题：## LLM\
+            \ 提取的故障信息，下方放置故障JSON数组\n2. 未检测到任何硬件故障时，故障信息部分替换文字：未检测到硬件故障，不输出空数组\n\n\
+            # 故障识别筛选规则\n1. 日志内存在多条硬件故障，全部提取，不可只取第一条；\n2. 纯系统日志（systemd/cron/sshd/dhcp/NetworkManager等）无硬件报错，故障数组置空；\n\
+            3. 同时存在CE可纠正、UE不可纠正故障，UE优先级更高，severity标记为Critical。\n\n# 错误码标准化强制规范\n1.\
+            \ 日志自带0x：保留0x，字母全部转为小写；\n2. 仅纯十六进制数字：自动补充0x前缀并小写；\n3. 内存故障固定使用 CE / UE；PCIe总线故障固定\
+            \ AER；传感器故障 SENSOR；网卡链路故障 LINK；无报错编码填空字符串。\n\n# 故障严重等级判定标准\nCritical：不可纠正错误UE、Fatal、IERR、硬件宕机、磁盘介质损坏、电源失效、温度临界告警、风扇停转失效；\n\
+            Warning：可纠正CE、PCIe可校正报错、常规温度波动、网卡链路闪断；\nUnknown：无明确故障等级、日志无硬件报错。\n\n#\
+            \ location硬件位置填写规范\n1. CPU故障：CPU X / CPU X Bank X / SOCKET X\n2. 内存故障：Channel\
+            \ X DIMM X\n3. PCIe故障：pcieport 总线地址（如0000:3c:00.0）\n4. 磁盘设备：nvmeXnX /\
+            \ sdX / ataX\n5. 网卡设备：ethX / ensX / enpXX\n6. 传感器无插槽信息：统一填写 Unknown\n\n\
+            # 兜底保底策略（核心，保证解析永不失效）\n1. 日志为空、完全无法识别、无任何硬件关键词：rag_query取日志前200字符，llm_context故障区域写「未检测到硬件故障」；\n\
+            2. 日志片段残缺、关键字段缺失：能识别的字段正常填充，无法识别的统一填 Unknown；\n3. 日志混杂大量系统噪音文本：自动过滤无关系统日志，仅解析硬件报错片段；\n\
+            4. 软件报错与硬件日志混杂：忽略软件相关内容，只提取硬件故障。\n\n# 严格禁止行为\n1. 禁止输出任何中文解释、分段说明、思考过程；\n\
+            2. 禁止修改顶层key名称、新增自定义字段；\n3. 禁止只输出故障数组，必须完整包含rag_query、llm_context两个顶层字段；\n\
+            4. 禁止十六进制编码大写、缺失0x前缀；\n5. 禁止severity使用规定外的自定义文字；\n6. 禁止使用逗号、顿号、竖线无空格替代\
+            \ ` | ` 多故障分隔符；\n7. 禁止嵌套JSON出现引号逃逸错误，输出合法标准JSON。"
+        - id: 93606661-5224-42c6-ad44-af6e814b5848
+          role: user
+          text: 按照要求输出
+        selected: false
+        structured_output:
+          schema:
+            $schema: http://json-schema.org/draft-07/schema#
+            additionalProperties: false
+            properties:
+              llm_context:
+                description: '固定两段式文本：## 故障日志原文 + ## LLM 提取的故障信息，故障信息为故障对象数组或文字「未检测到硬件故障」'
+                type: string
+              rag_query:
+                description: RAG知识库检索关键词，单故障格式：错误码 部件 故障描述；多故障使用 ` | ` 分隔；无硬件故障取日志前200字符
+                type: string
+            required:
+            - rag_query
+            - llm_context
+            type: object
+        structured_output_enabled: true
+        title: 保底
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1784251513949'
+      position:
+        x: 786.5817798863832
+        y: -236.04928970649735
+      positionAbsolute:
+        x: 786.5817798863832
+        y: -236.04928970649735
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        dataset_ids:
+        - NpZ+riUkPCTa1nOpVPm05YW0hofIe64WTd9gWg1ywbwkDarl/m0YyEJ8cjs198My
+        multiple_retrieval_config:
+          reranking_enable: false
+          reranking_mode: weighted_score
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: bge-m3
+              embedding_provider_name: langgenius/openai_api_compatible/openai_api_compatible
+              vector_weight: 0.7
+            weight_type: customized
+        query_attachment_selector: []
+        query_variable_selector:
+        - '1784251513949'
+        - structured_output
+        - rag_query
+        retrieval_mode: multiple
+        selected: false
+        title: 知识检索 2
+        type: knowledge-retrieval
+      height: 89
+      id: '1784251578820'
+      position:
+        x: 1088.839125842667
+        y: -236.04928970649735
+      positionAbsolute:
+        x: 1088.839125842667
+        y: -236.04928970649735
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    viewport:
+      x: 45.70117932069081
+      y: 461.5643291458355
+      zoom: 0.7889648029566599
+  rag_pipeline_variables: []

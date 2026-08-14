@@ -1,0 +1,16 @@
+﻿node_modules
+offline
+*.tar.gz
+*.tar
+*.tgz
+CodexInstaller.exe
+*.db
+*.db-shm
+*.db-wal
+dist
+__pycache__
+.git
+*.docx
+generated-images
+assets
+public

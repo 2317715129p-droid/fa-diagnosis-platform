@@ -1,0 +1,50 @@
+# ===== Dependencies =====
+node_modules/
+build/
+dist/
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ===== Env / secrets (keep examples) =====
+.env
+.env.local
+*.env
+!.env.example
+!.env.offline.example
+
+# ===== Database (runtime) =====
+*.db
+*.db-shm
+*.db-wal
+fa_data.db*
+
+# ===== Deployment binaries / large artifacts (NEVER commit to git) =====
+# The real deployable offline packages live in D:\idex\offline (fa.tar etc.)
+# and are distributed as Release assets, NOT tracked in source control.
+*.tar
+*.tar.gz
+*.tgz
+*.gguf
+*.exe
+deploy-images.tar
+dify-*.tar
+docker-*.tgz
+docker-compose-bin
+ollama-*.tar.gz
+fa-*.tar
+CodexInstaller.exe
+OllamaSetup.exe
+
+# ===== Editor / OS =====
+.DS_Store
+*.log
+.coverage
+.idea/
+.vscode/
+
+# ===== Runtime report output =====
+static/reports/
