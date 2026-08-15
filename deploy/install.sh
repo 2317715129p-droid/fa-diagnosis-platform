@@ -18,7 +18,6 @@
 set -euo pipefail
 
 INSTALL_DIR="/opt/fa"
-BUNDLE_NAME="fa-diagnosis-offline.tar.gz"
 IMAGES_TAR="deploy-images.tar"
 
 SKIP_CONFIRM=0
@@ -230,8 +229,27 @@ start_docker_daemon() {
 check_bundle() {
   log "Checking offline bundle..."
 
-  if [[ ! -f "$BUNDLE_NAME" ]]; then
-    die "Bundle not found: $BUNDLE_NAME. Please copy it to the current directory."
+  # 智能查找主包文件（支持多种命名）
+  BUNDLE_NAME=""
+  for name in "fa-diagnosis-offline.tar.gz" "fa-diagnosis-offline-clean.tar.gz"; do
+    if [[ -f "$INSTALL_DIR/$name" ]]; then
+      BUNDLE_NAME="$INSTALL_DIR/$name"
+      break
+    fi
+    if [[ -f "$name" ]]; then
+      BUNDLE_NAME="$name"
+      break
+    fi
+  done
+
+  if [[ -z "$BUNDLE_NAME" ]]; then
+    # 如果找不到主包，检查是否已经解压过（目录结构存在）
+    if [[ -d "$INSTALL_DIR/api" ]] && [[ -f "$INSTALL_DIR/docker-compose.yml" ]]; then
+      log_warn "Bundle not found but installation directory already extracted. Skipping bundle check."
+      BUNDLE_NAME=""
+      return 0
+    fi
+    die "Bundle not found. Expected: fa-diagnosis-offline.tar.gz or fa-diagnosis-offline-clean.tar.gz"
   fi
 
   local size
@@ -241,44 +259,38 @@ check_bundle() {
     log_warn "It may be incomplete. Continuing anyway..."
   fi
 
-  log_ok "Bundle: $BUNDLE_NAME (${size} bytes)"
+  log_ok "Bundle: $(basename "$BUNDLE_NAME") (${size} bytes)"
 }
 
 check_install_dir() {
   if [[ -d "$INSTALL_DIR" ]]; then
     if [[ $FORCE -eq 1 ]]; then
       log_warn "Overwriting existing installation at $INSTALL_DIR..."
-      # Save the bundle file first if it's inside the install dir
-      local saved_bundle=""
-      local saved_model=""
-      if [[ -f "$INSTALL_DIR/$BUNDLE_NAME" ]]; then
-        saved_bundle="$INSTALL_DIR/$BUNDLE_NAME"
-        cp -f "$saved_bundle" "/tmp/${BUNDLE_NAME}.bak" 2>/dev/null || true
-        log_warn "Saved bundle to /tmp/${BUNDLE_NAME}.bak"
-      fi
-      if [[ -f "$INSTALL_DIR/ollama-models-qwen2-7b.tar.gz" ]]; then
-        saved_model="$INSTALL_DIR/ollama-models-qwen2-7b.tar.gz"
-        cp -f "$saved_model" "/tmp/ollama-models-qwen2-7b.tar.gz.bak" 2>/dev/null || true
-        log_warn "Saved model to /tmp/ollama-models-qwen2-7b.tar.gz.bak"
-      fi
-      rm -rf "$INSTALL_DIR"
-      mkdir -p "$INSTALL_DIR"
-      # Restore saved files
-      if [[ -n "$saved_bundle" && -f "/tmp/${BUNDLE_NAME}.bak" ]]; then
-        cp -f "/tmp/${BUNDLE_NAME}.bak" "$INSTALL_DIR/$BUNDLE_NAME"
-        rm -f "/tmp/${BUNDLE_NAME}.bak"
-      fi
-      if [[ -n "$saved_model" && -f "/tmp/ollama-models-qwen2-7b.tar.gz.bak" ]]; then
-        cp -f "/tmp/ollama-models-qwen2-7b.tar.gz.bak" "$INSTALL_DIR/ollama-models-qwen2-7b.tar.gz"
-        rm -f "/tmp/ollama-models-qwen2-7b.tar.gz.bak"
-      fi
+      # --force 模式下继续执行，extract_bundle 会处理重复解压
     else
+      # 如果目录已经有必要的文件结构，允许继续
+      if [[ -d "$INSTALL_DIR/api" ]] && [[ -f "$INSTALL_DIR/docker-compose.yml" ]]; then
+        log_warn "Installation directory exists but has valid structure. Continuing..."
+        return 0
+      fi
       die "Installation directory exists: $INSTALL_DIR. Use --force to overwrite."
     fi
   fi
 }
 
 extract_bundle() {
+  # 如果已经有解压好的目录结构，跳过解压
+  if [[ -d "$INSTALL_DIR/api" ]] && [[ -f "$INSTALL_DIR/docker-compose.yml" ]] && [[ -f "$INSTALL_DIR/deploy-images.tar" ]]; then
+    log_warn "Installation directory already has extracted files. Skipping extraction."
+    return 0
+  fi
+
+  # 如果没有找到主包文件，也跳过
+  if [[ -z "${BUNDLE_NAME:-}" ]]; then
+    log_warn "No bundle file found, but directory structure exists. Skipping extraction."
+    return 0
+  fi
+
   log "Extracting bundle to $INSTALL_DIR..."
   mkdir -p "$INSTALL_DIR"
 
@@ -336,10 +348,10 @@ verify_images() {
     "langgenius/dify-api:1.15.0"
     "langgenius/dify-web:1.15.0"
     "langgenius/dify-plugin-daemon:0.6.3-local"
-    "langgenius/dify-sandbox:0.2.15"
+    "langgenius/dify-sandbox:0.2.10"
     "ubuntu/squid:latest"
-    "postgres:15-alpine"
-    "redis:6-alpine"
+    "postgres:15.8-alpine"
+    "redis:6.2.14-alpine"
     "semitechnologies/weaviate:1.27.0"
     "ollama/ollama:0.5.7"
   )
@@ -639,11 +651,12 @@ confirm_install() {
     return 0
   fi
 
+  local bundle_info="${BUNDLE_NAME:-already extracted}"
   echo
   echo "=============================================="
   echo "  FA Diagnosis System — Installation Confirm"
   echo "=============================================="
-  echo "  Bundle:    $BUNDLE_NAME"
+  echo "  Bundle:    $bundle_info"
   echo "  Install to: $INSTALL_DIR"
   echo "  Images:    Will be loaded from deploy-images.tar"
   echo "  Mode:      Full Offline (no internet required)"

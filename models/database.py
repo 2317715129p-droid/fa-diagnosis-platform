@@ -84,7 +84,7 @@ class DiagnosisReport(Base):
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"timeout": 30, "check_same_thread": False},
+    connect_args={"timeout": 2000, "check_same_thread": False},
 )
 
 

@@ -7,12 +7,11 @@ parsing (messages separated by blank lines / \\n\\n) and surface non-200 errors.
 
 from __future__ import annotations
 
-import asyncio
 import json
 from collections.abc import AsyncIterator
 from typing import Any
 
-import requests
+import httpx
 
 from config import DIFY_API_KEY, DIFY_API_URL, DIFY_TRANSLATE_API_KEY
 
@@ -86,20 +85,15 @@ async def translate_report(report_zh: str) -> str:
         "user": "admin",
     }
 
-    # NOTE: replaced httpx (which fails on Windows for localhost) with `requests`
-    # running in a thread via asyncio.to_thread (3.9+).
     try:
-        response = await asyncio.to_thread(
-            lambda: requests.post(url, json=body, headers=headers, timeout=120)
-        )
-    except requests.RequestException as exc:
+        async with httpx.AsyncClient(timeout=2000.0) as client:
+            response = await client.post(url, json=body, headers=headers)
+    except httpx.HTTPError as exc:
         raise RuntimeError(f"Dify translate request failed: {exc}") from exc
 
-    try:
-        response.raise_for_status()
-    except requests.HTTPError as exc:
+    if response.status_code != 200:
         raise RuntimeError(
-            f"Dify translate HTTP {exc.response.status_code}: {exc.response.text[:500]}"
+            f"Dify translate HTTP {response.status_code}: {response.text[:500]}"
         )
 
     try:
@@ -163,144 +157,89 @@ async def run_dify_workflow(log_text: str, server_id: str) -> AsyncIterator[str]
     chunk_count = 0
     finished_outputs: Any = None
 
-    # NOTE: replaced httpx.AsyncClient (which fails on Windows for localhost
-    # with "All connection attempts failed" in httpx 0.28.x) with `requests`
-    # streaming POST bridged through an asyncio.Queue so the public async
-    # generator signature is unchanged.
-    loop = asyncio.get_event_loop()
-    queue: asyncio.Queue = asyncio.Queue()
+    try:
+        # Connect timeout short so UI fails fast when Dify is down locally
+        # Read timeout 2000s for slow LLM inference; connect 30s for fast fail
+        timeout = httpx.Timeout(2000.0, connect=30.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            async with client.stream("POST", url, json=body, headers=headers) as response:
+                if response.status_code != 200:
+                    error_body = (await response.aread()).decode("utf-8", errors="replace")
+                    raise RuntimeError(
+                        f"Dify HTTP {response.status_code}: {error_body[:300]}"
+                    )
 
-    def _process_stream() -> None:
-        """Run synchronously in a worker thread; push events to async queue."""
-        response = None
-        try:
-            response = requests.post(
-                url,
-                json=body,
-                headers=headers,
-                stream=True,
-                timeout=(5.0, 300.0),
-            )
-            if response.status_code != 200:
-                error_msg = (
-                    f"Dify HTTP {response.status_code}: "
-                    f"{response.text[:300]}"
-                )
-                loop.call_soon_threadsafe(
-                    queue.put_nowait, ("error", error_msg)
-                )
-                return
+                buffer = ""
+                async for raw in response.aiter_text():
+                    buffer += raw
+                    # SSE messages are separated by a blank line (\n\n).
+                    while "\n\n" in buffer:
+                        message, buffer = buffer.split("\n\n", 1)
+                        for line in message.splitlines():
+                            line = line.strip()
+                            if not line:
+                                continue
+                            payload = _extract_data_payload(line)
+                            if payload is None:
+                                continue
+                            if payload in ("[DONE]", "DONE"):
+                                continue
+                            try:
+                                event_data = json.loads(payload)
+                            except json.JSONDecodeError:
+                                continue
 
-            buffer = ""
-            for raw_line in response.iter_lines(decode_unicode=True):
-                if raw_line is None:
-                    continue
-                buffer += raw_line + "\n"
-                # SSE messages are separated by a blank line (\n\n).
-                while "\n\n" in buffer:
-                    message, buffer = buffer.split("\n\n", 1)
-                    for line in message.splitlines():
+                            event = event_data.get("event")
+                            data = event_data.get("data") or {}
+
+                            if event == "text_chunk":
+                                text = data.get("text")
+                                if text:
+                                    chunk_count += 1
+                                    yield text
+                            elif event == "workflow_finished":
+                                finished_outputs = data.get("outputs")
+                                if data.get("status") == "failed":
+                                    raise RuntimeError(
+                                        f"Dify workflow failed: {data.get('error')}"
+                                    )
+
+                # Flush any trailing buffered message without a final \n\n.
+                if buffer.strip():
+                    for line in buffer.splitlines():
                         line = line.strip()
-                        if not line:
-                            continue
                         payload = _extract_data_payload(line)
-                        if payload is None:
-                            continue
-                        if payload in ("[DONE]", "DONE"):
+                        if not payload:
                             continue
                         try:
                             event_data = json.loads(payload)
                         except json.JSONDecodeError:
                             continue
-
-                        event = event_data.get("event")
-                        data = event_data.get("data") or {}
-
-                        if event == "text_chunk":
-                            text = data.get("text")
+                        if event_data.get("event") == "text_chunk":
+                            text = (event_data.get("data") or {}).get("text")
                             if text:
-                                loop.call_soon_threadsafe(
-                                    queue.put_nowait, ("chunk", text)
-                                )
-                        elif event == "workflow_finished":
-                            status = data.get("status")
-                            outputs = data.get("outputs")
-                            loop.call_soon_threadsafe(
-                                queue.put_nowait,
-                                ("finished", outputs, status),
-                            )
-                            if status == "failed":
-                                loop.call_soon_threadsafe(
-                                    queue.put_nowait,
-                                    ("error", f"Dify workflow failed: {data.get('error')}"),
-                                )
-                                return
+                                chunk_count += 1
+                                yield text
+                        elif event_data.get("event") == "workflow_finished":
+                            finished_outputs = (event_data.get("data") or {}).get("outputs")
 
-            # Flush any trailing buffered message without a final \n\n.
-            if buffer.strip():
-                for line in buffer.splitlines():
-                    line = line.strip()
-                    if not line:
-                        continue
-                    payload = _extract_data_payload(line)
-                    if not payload or payload in ("[DONE]", "DONE"):
-                        continue
-                    try:
-                        event_data = json.loads(payload)
-                    except json.JSONDecodeError:
-                        continue
-                    event = event_data.get("event")
-                    data = event_data.get("data") or {}
-                    if event == "text_chunk":
-                        text = data.get("text")
-                        if text:
-                            loop.call_soon_threadsafe(
-                                queue.put_nowait, ("chunk", text)
-                            )
-                    elif event == "workflow_finished":
-                        loop.call_soon_threadsafe(
-                            queue.put_nowait,
-                            ("finished", data.get("outputs"), data.get("status")),
-                        )
-        except requests.RequestException as exc:
-            loop.call_soon_threadsafe(
-                queue.put_nowait,
-                ("error", f"无法连接 Dify（{DIFY_API_URL}）: {exc}. 请确认本机 Dify 已启动（通常 http://localhost），或暂时清空 .env 里的 DIFY_API_KEY 使用模拟报告。"),
-            )
-        except Exception as exc:
-            loop.call_soon_threadsafe(
-                queue.put_nowait,
-                ("error", f"Dify unexpected error: {exc}"),
-            )
-        finally:
-            if response is not None:
-                try:
-                    response.close()
-                except Exception:
-                    pass
-            loop.call_soon_threadsafe(queue.put_nowait, ("done", None))
+        # Fallback: some workflows only return final text in workflow_finished.
+        if chunk_count == 0:
+            fallback = _text_from_outputs(finished_outputs)
+            if fallback:
+                print("No text_chunk events; falling back to workflow_finished outputs")
+                yield fallback
+            else:
+                raise RuntimeError(
+                    "Dify returned 0 text chunks. Check workflow output / API key."
+                )
 
-    _ = loop.run_in_executor(None, _process_stream)
-
-    while True:
-        kind, *rest = await queue.get()
-        if kind == "chunk":
-            chunk_count += 1
-            yield rest[0]
-        elif kind == "finished":
-            finished_outputs = rest[0]
-        elif kind == "error":
-            raise RuntimeError(rest[0])
-        elif kind == "done":
-            break
-
-    # Fallback: some workflows only return final text in workflow_finished.
-    if chunk_count == 0:
-        fallback = _text_from_outputs(finished_outputs)
-        if fallback:
-            print("No text_chunk events; falling back to workflow_finished outputs")
-            yield fallback
-        else:
-            raise RuntimeError(
-                "Dify returned 0 text chunks. Check workflow output / API key."
-            )
+    except httpx.HTTPError as exc:
+        raise RuntimeError(
+            f"无法连接 Dify（{DIFY_API_URL}）: {exc}. "
+            "请确认本机 Dify 已启动（通常 http://localhost），或暂时清空 .env 里的 DIFY_API_KEY 使用模拟报告。"
+        ) from exc
+    except RuntimeError:
+        raise
+    except Exception as exc:
+        raise RuntimeError(f"Dify unexpected error: {exc}") from exc
