@@ -1,12 +1,15 @@
-# FA Diagnosis System MVP — full stack (FA + Dify 1.15.0 + Ollama)
+# FA Diagnosis System MVP — full stack (FA + Dify + Ollama)
 #
 # Offline / intranet deployment (NO internet on the target host):
 #   1) On a machine WITH internet, run:  bash deploy/offline-prep.sh
 #   2) Copy fa-diagnosis-offline.tar.gz to the intranet server
 #   3) Extract, then:  docker load -i deploy-images.tar
-#   4) cp .env.offline.example .env && docker compose -p fa up -d --build
+#   4) cp .env.example .env && docker compose -p fa up -d --build
 #   5) After startup, configure Dify to use local Ollama models
 #
+# Note: .env.example is the unified template for both offline and public deployments
+#
+# For offline deployment, preload images with: docker save / docker load
 # All image tags below are pinned (no :latest).
 #
 # Local LLM: Ollama runs as a service (ollama:11434), accessible from Dify.
@@ -18,7 +21,7 @@ name: fa
 networks:
   fa_network:
     driver: bridge
-  ssrf_proxy_network:
+  default:
     driver: bridge
 
 volumes:
@@ -29,16 +32,16 @@ volumes:
   weaviate_data:
   ollama_models:
     driver: local
-  plugin_daemon_data:
-  sandbox_dependencies:
 
 services:
   # ---------------------------------------------------------------------------
-  # FA Diagnosis — FastAPI backend
+  # FA Diagnosis — FastAPI backend (builds from offline-packages wheels)
   # ---------------------------------------------------------------------------
   backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     image: fa-backend:1.0.0
-    entrypoint: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
     container_name: fa-backend
     restart: unless-stopped
     env_file:
@@ -62,6 +65,7 @@ services:
         condition: service_started
     networks:
       - fa_network
+      - default
     healthcheck:
       test:
         [
@@ -91,30 +95,11 @@ services:
       - backend
     networks:
       - fa_network
+      - default
 
   # ---------------------------------------------------------------------------
-  # Dify 1.15.0 — API / Worker / Web
+  # Dify — API / Worker / Web (official images, pinned tags — no :latest)
   # ---------------------------------------------------------------------------
-  dify-init-permissions:
-    image: busybox:1.36.1
-    container_name: fa-dify-init-permissions
-    command:
-      - sh
-      - -c
-      - |
-        FLAG_FILE="/app/api/storage/.init_permissions"
-        if [ -f "$${FLAG_FILE}" ]; then
-          echo "Permissions already initialized. Exiting."
-          exit 0
-        fi
-        echo "Initializing permissions for /app/api/storage"
-        chown -R 1001:1001 /app/api/storage && touch "$${FLAG_FILE}"
-        echo "Permissions initialized. Exiting."
-    volumes:
-      - dify_storage:/app/api/storage
-    networks:
-      - fa_network
-
   dify-api:
     image: langgenius/dify-api:1.15.0
     container_name: dify-api
@@ -131,11 +116,11 @@ services:
       FILES_URL: ${FILES_URL:-http://localhost}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
-      DB_HOST: ${POSTGRES_HOST:-postgres}
-      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_DATABASE: ${POSTGRES_DB:-dify}
-      REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-difyai123456}
       REDIS_USE_SSL: "false"
       REDIS_DB: 0
@@ -146,40 +131,26 @@ services:
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:-WVF5YThaHlkYjkNmNTM}
       CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
-      CODE_EXECUTION_API_KEY: ${SANDBOX_API_KEY:-dify-sandbox}
-      SSRF_PROXY_HTTP_URL: ${SSRF_PROXY_HTTP_URL:-http://ssrf-proxy:3128}
-      SSRF_PROXY_HTTPS_URL: ${SSRF_PROXY_HTTPS_URL:-http://ssrf-proxy:3128}
+      CODE_EXECUTION_API_KEY: ${CODE_EXECUTION_API_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
       MIGRATION_ENABLED: "true"
-      PLUGIN_REMOTE_INSTALL_HOST: ${EXPOSE_PLUGIN_DEBUGGING_HOST:-localhost}
-      PLUGIN_REMOTE_INSTALL_PORT: ${EXPOSE_PLUGIN_DEBUGGING_PORT:-5003}
-      PLUGIN_MAX_PACKAGE_SIZE: ${PLUGIN_MAX_PACKAGE_SIZE:-52428800}
-      PLUGIN_DAEMON_TIMEOUT: ${PLUGIN_DAEMON_TIMEOUT:-600.0}
-      PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://plugin_daemon:5002}
-      INNER_API_KEY_FOR_PLUGIN: ${PLUGIN_DIFY_INNER_API_KEY:-QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1}
+      PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://fa-plugin-daemon:5002}
+      PLUGIN_DAEMON_KEY: ${PLUGIN_DAEMON_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      GUNICORN_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_READ_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_WRITE_TIMEOUT: "2000"
+      CODE_EXECUTION_READ_TIMEOUT: "2000"
+      PLUGIN_DAEMON_TIMEOUT: "2000"
     volumes:
       - dify_storage:/app/api/storage
     depends_on:
-      dify-init-permissions:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
       weaviate:
         condition: service_started
-      plugin_daemon:
-        condition: service_started
-      dify-sandbox:
-        condition: service_started
     networks:
       - fa_network
-      - ssrf_proxy_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
 
   dify-worker:
     image: langgenius/dify-api:1.15.0
@@ -189,13 +160,18 @@ services:
       MODE: worker
       LOG_LEVEL: INFO
       SECRET_KEY: ${DIFY_SECRET_KEY:-sk-fa-dify-change-me-in-production}
+      CONSOLE_WEB_URL: ${CONSOLE_WEB_URL:-http://localhost}
+      CONSOLE_API_URL: ${CONSOLE_API_URL:-http://localhost}
+      SERVICE_API_URL: ${SERVICE_API_URL:-http://localhost}
+      APP_WEB_URL: ${APP_WEB_URL:-http://localhost}
+      FILES_URL: ${FILES_URL:-http://localhost}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
-      DB_HOST: ${POSTGRES_HOST:-postgres}
-      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_DATABASE: ${POSTGRES_DB:-dify}
-      REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-difyai123456}
       REDIS_USE_SSL: "false"
       REDIS_DB: 0
@@ -206,30 +182,23 @@ services:
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:-WVF5YThaHlkYjkNmNTM}
       CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
-      CODE_EXECUTION_API_KEY: ${SANDBOX_API_KEY:-dify-sandbox}
-      SSRF_PROXY_HTTP_URL: ${SSRF_PROXY_HTTP_URL:-http://ssrf-proxy:3128}
-      SSRF_PROXY_HTTPS_URL: ${SSRF_PROXY_HTTPS_URL:-http://ssrf-proxy:3128}
-      PLUGIN_MAX_PACKAGE_SIZE: ${PLUGIN_MAX_PACKAGE_SIZE:-52428800}
-      PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://plugin_daemon:5002}
-      INNER_API_KEY_FOR_PLUGIN: ${PLUGIN_DIFY_INNER_API_KEY:-QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1}
+      CODE_EXECUTION_API_KEY: ${CODE_EXECUTION_API_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://fa-plugin-daemon:5002}
+      PLUGIN_DAEMON_KEY: ${PLUGIN_DAEMON_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      GUNICORN_TIMEOUT: "2000"
+      PLUGIN_DAEMON_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_READ_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_WRITE_TIMEOUT: "2000"
+      CODE_EXECUTION_READ_TIMEOUT: "2000"
     volumes:
       - dify_storage:/app/api/storage
     depends_on:
-      dify-init-permissions:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      weaviate:
-        condition: service_started
-      plugin_daemon:
-        condition: service_started
-      dify-sandbox:
-        condition: service_started
+      - dify-api
+      - postgres
+      - redis
+      - weaviate
     networks:
       - fa_network
-      - ssrf_proxy_network
 
   dify-web:
     image: langgenius/dify-web:1.15.0
@@ -237,12 +206,8 @@ services:
     restart: unless-stopped
     environment:
       CONSOLE_API_URL: ${CONSOLE_API_URL:-}
-      SERVER_CONSOLE_API_URL: ${SERVER_CONSOLE_API_URL:-http://dify-api:5001}
       APP_API_URL: ${APP_API_URL:-}
-      MARKETPLACE_API_URL: ${MARKETPLACE_API_URL:-https://marketplace.dify.ai}
-      MARKETPLACE_URL: ${MARKETPLACE_URL:-https://marketplace.dify.ai}
-      NEXT_PUBLIC_COOKIE_DOMAIN: ${NEXT_PUBLIC_COOKIE_DOMAIN:-}
-      NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-ws://localhost}
+      SERVICE_API_URL: ${SERVICE_API_URL:-}
     networks:
       - fa_network
 
@@ -250,32 +215,25 @@ services:
   # Dify dependencies (pinned tags — no :latest)
   # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15.8-alpine
     container_name: fa-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
       POSTGRES_DB: ${POSTGRES_DB:-dify}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    command: >
-      postgres -c 'max_connections=100'
-               -c 'shared_buffers=128MB'
-               -c 'work_mem=4MB'
-               -c 'maintenance_work_mem=64MB'
-               -c 'effective_cache_size=4096MB'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - fa_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-dify}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
   redis:
-    image: redis:6-alpine
+    image: redis:6.2.14-alpine
     container_name: fa-redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:-difyai123456}
@@ -303,96 +261,6 @@ services:
     volumes:
       - weaviate_data:/var/lib/weaviate
     networks:
-      - fa_network
-
-  # ---------------------------------------------------------------------------
-  # Dify Sandbox (code execution & document parsing)
-  # ---------------------------------------------------------------------------
-  dify-sandbox:
-    image: langgenius/dify-sandbox:0.2.15
-    container_name: fa-sandbox
-    restart: unless-stopped
-    environment:
-      API_KEY: ${SANDBOX_API_KEY:-dify-sandbox}
-      GIN_MODE: ${SANDBOX_GIN_MODE:-release}
-      WORKER_TIMEOUT: ${SANDBOX_WORKER_TIMEOUT:-15}
-      ENABLE_NETWORK: ${SANDBOX_ENABLE_NETWORK:-true}
-      HTTP_PROXY: ${SANDBOX_HTTP_PROXY:-http://ssrf-proxy:3128}
-      HTTPS_PROXY: ${SANDBOX_HTTPS_PROXY:-http://ssrf-proxy:3128}
-      SANDBOX_PORT: ${SANDBOX_PORT:-8194}
-    volumes:
-      - sandbox_dependencies:/dependencies
-      - ./volumes/sandbox/conf:/conf
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8194/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
-    networks:
-      - ssrf_proxy_network
-
-  # ---------------------------------------------------------------------------
-  # Dify plugin daemon (enables offline plugin installs, e.g. Ollama)
-  # ---------------------------------------------------------------------------
-  plugin_daemon:
-    image: langgenius/dify-plugin-daemon:0.6.3-local
-    container_name: fa-plugin-daemon
-    restart: unless-stopped
-    environment:
-      DB_DATABASE: ${DB_PLUGIN_DATABASE:-dify_plugin}
-      DB_USERNAME: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
-      DB_HOST: ${POSTGRES_HOST:-postgres}
-      DB_PORT: ${POSTGRES_PORT:-5432}
-      DB_SSL_MODE: ${DB_SSL_MODE:-disable}
-      SERVER_PORT: ${PLUGIN_DAEMON_PORT:-5002}
-      SERVER_KEY: ${PLUGIN_DAEMON_KEY:-lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi}
-      MAX_PLUGIN_PACKAGE_SIZE: ${PLUGIN_MAX_PACKAGE_SIZE:-52428800}
-      PPROF_ENABLED: ${PLUGIN_PPROF_ENABLED:-false}
-      DIFY_INNER_API_URL: ${PLUGIN_DIFY_INNER_API_URL:-http://dify-api:5001}
-      DIFY_INNER_API_KEY: ${PLUGIN_DIFY_INNER_API_KEY:-QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1}
-      PLUGIN_REMOTE_INSTALLING_HOST: ${PLUGIN_DEBUGGING_HOST:-0.0.0.0}
-      PLUGIN_REMOTE_INSTALLING_PORT: ${PLUGIN_DEBUGGING_PORT:-5003}
-      PLUGIN_WORKING_PATH: ${PLUGIN_WORKING_PATH:-/app/storage/cwd}
-      FORCE_VERIFYING_SIGNATURE: ${FORCE_VERIFYING_SIGNATURE:-true}
-      PYTHON_ENV_INIT_TIMEOUT: ${PLUGIN_PYTHON_ENV_INIT_TIMEOUT:-120}
-      PLUGIN_MAX_EXECUTION_TIMEOUT: ${PLUGIN_MAX_EXECUTION_TIMEOUT:-600}
-      PIP_MIRROR_URL: ${PIP_MIRROR_URL:-}
-      PLUGIN_STORAGE_TYPE: ${PLUGIN_STORAGE_TYPE:-local}
-      PLUGIN_STORAGE_LOCAL_ROOT: ${PLUGIN_STORAGE_LOCAL_ROOT:-/app/storage}
-      PLUGIN_INSTALLED_PATH: ${PLUGIN_INSTALLED_PATH:-plugin}
-      PLUGIN_PACKAGE_CACHE_PATH: ${PLUGIN_PACKAGE_CACHE_PATH:-plugin_packages}
-      PLUGIN_MEDIA_CACHE_PATH: ${PLUGIN_MEDIA_CACHE_PATH:-assets}
-    ports:
-      - "${EXPOSE_PLUGIN_DEBUGGING_PORT:-5003}:${PLUGIN_DEBUGGING_PORT:-5003}"
-    volumes:
-      - plugin_daemon_data:/app/storage
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - fa_network
-
-  # ---------------------------------------------------------------------------
-  # SSRF Proxy (security proxy for plugin/sandbox external requests)
-  # ---------------------------------------------------------------------------
-  ssrf-proxy:
-    image: ubuntu/squid:latest
-    container_name: fa-ssrf-proxy
-    restart: unless-stopped
-    volumes:
-      - ./ssrf_proxy/squid.conf.template:/etc/squid/squid.conf.template
-      - ./ssrf_proxy/docker-entrypoint.sh:/docker-entrypoint-mount.sh
-    entrypoint: ['sh', '-c', "cp /docker-entrypoint-mount.sh /docker-entrypoint.sh && sed -i 's/\r$$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh"]
-    environment:
-      HTTP_PORT: ${SSRF_HTTP_PORT:-3128}
-      COREDUMP_DIR: ${SSRF_COREDUMP_DIR:-/var/spool/squid}
-      REVERSE_PROXY_PORT: ${SSRF_REVERSE_PROXY_PORT:-8194}
-      SANDBOX_HOST: ${SSRF_SANDBOX_HOST:-dify-sandbox}
-      SANDBOX_PORT: ${SANDBOX_PORT:-8194}
-    networks:
-      - ssrf_proxy_network
       - fa_network
 
   # ---------------------------------------------------------------------------
@@ -429,3 +297,58 @@ services:
       - dify-web
     networks:
       - fa_network
+      - default
+
+  # ---------------------------------------------------------------------------
+  # Dify Plugin Daemon (local plugin execution)
+  # ---------------------------------------------------------------------------
+  plugin-daemon:
+    image: langgenius/dify-plugin-daemon:0.6.3-local
+    container_name: fa-plugin-daemon
+    restart: unless-stopped
+    environment:
+      DB_HOST: fa-postgres
+      DB_PORT: '5432'
+      DB_USER: postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
+      DB_NAME: dify
+      DB_DATABASE: dify
+      REDIS_HOST: fa-redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-difyai123456}
+      REDIS_DB: '0'
+      SERVER_PORT: '5002'
+      SERVER_KEY: 5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a
+      DIFY_INNER_API_URL: http://dify-api:5001
+      DIFY_INNER_API_KEY: 5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a
+      PLUGIN_REMOTE_INSTALLING_HOST: 0.0.0.0
+      PLUGIN_REMOTE_INSTALLING_PORT: '5001'
+      PLUGIN_WORKING_PATH: /app/storage
+      PLUGIN_MAX_PACKAGE_SIZE: '15728640'
+      LOG_LEVEL: INFO
+      PLUGIN_MAX_EXECUTION_TIMEOUT: '2000'
+      PLUGIN_MAX_REQUEST_TIMEOUT: '2000'
+    volumes:
+      - dify_storage:/app/storage
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - fa_network
+      - default
+
+  # ---------------------------------------------------------------------------
+  # Dify Sandbox (code execution)
+  # ---------------------------------------------------------------------------
+  dify-sandbox:
+    image: langgenius/dify-sandbox:0.2.10
+    container_name: dify-sandbox
+    restart: unless-stopped
+    environment:
+      API_KEY: 5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a
+      GIN_MODE: release
+      WORKERS: 4
+    networks:
+      - fa_network
+      - default

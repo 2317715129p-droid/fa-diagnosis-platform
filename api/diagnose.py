@@ -116,21 +116,3 @@ async def translate(body: TranslateRequest) -> dict:
 @router.get("/reports/{asset_id}")
 def reports(asset_id: str) -> list[dict]:
     return get_reports(asset_id)
-
-
-class ExportRequest(BaseModel):
-    log_text: str
-
-
-@router.post("/export")
-def export_log(body: ExportRequest) -> dict:
-    """Export log text as downloadable file."""
-    if not body.log_text or not body.log_text.strip():
-        raise HTTPException(status_code=400, detail="log_text is required")
-    
-    from fastapi.responses import PlainTextResponse
-    return PlainTextResponse(
-        content=body.log_text,
-        media_type="text/plain",
-        headers={"Content-Disposition": "attachment; filename=hardware_log.txt"},
-    )
