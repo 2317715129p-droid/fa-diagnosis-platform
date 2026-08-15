@@ -56,24 +56,34 @@ AI 推理后端层  Dify 工作流（预处理 → RAG 检索 → LLM 推理，S
 
 ## 🚀 快速开始
 
-### 方式一：Docker 一键部署（推荐，生产/演示）
+本仓库为**源码仓库**。无论哪种方式，部署都只需一条命令。
 
-面向全新 Ubuntu 20.04/22.04/24.04 服务器，提供**内网离线版**与**公网版**双部署包：
+### 方式一：公网版（在线 API，推荐先试）
+
+适用于可访问公网、使用 DeepSeek / GLM-4 / Qwen 在线大模型的场景。部署时自动从 Docker 镜像仓库拉取所需镜像，**无需离线包**。
 
 ```bash
-# 内网离线版：把 <服务器公网IP> 换成实际 IP
-cd /opt
-sudo bash install-all.sh <服务器公网IP>
-
-# 公网版
-mkdir -p /opt/fa && tar -xzf fa-diagnosis-public.tar.gz -C /opt/fa
-cd /opt/fa && sudo bash deploy/install-public.sh --skip-confirm
+git clone https://github.com/2317715129p-droid/fa-diagnosis-platform.git
+cd fa-diagnosis-platform
+sudo bash deploy/install-public.sh --skip-confirm
 ```
 
 部署后访问：FA 前端 `http://<IP>:3000`、Dify 控制台 `http://<IP>:80`、FA 后端 `http://<IP>:8000`。
-完整前置检查、初始化、Agent 部署、排错见 [docs/离线部署手册.md](docs/离线部署手册.md)。
 
-### 方式二：本地开发（源码）
+### 方式二：内网全离线版（本地模型，零外网）
+
+适用于国企内网 / 无公网环境。需先获取离线部署包（含 Docker 镜像与 Qwen2-7B 本地模型），再一键部署：
+
+1. 下载离线部署包 `fa.tar`（约 9.6 GB）：👉 **【请替换为你的下载链接：阿里云 OSS / 网盘】**
+2. 解压并部署：
+   ```bash
+   mkdir -p /opt/fa && sudo tar -xf fa.tar -C /opt/fa
+   cd /opt/fa && sudo bash install-all.sh <服务器IP>
+   ```
+
+> ⚠️ 离线部署包体积过大（约 9.6 GB，含模型权重与 Docker 镜像），**不存放在 GitHub**，请通过上方链接获取。
+
+### 方式三：本地开发（源码）
 
 ```bash
 # 后端
@@ -169,7 +179,7 @@ fa-diagnosis-platform/
 
 ## 📜 许可证
 
-待定（License 待补充）。代码基于 Dify、FastAPI、React 等开源组件构建，请遵循各自许可证。
+MIT License。详见 [LICENSE](LICENSE)。代码基于 Dify、FastAPI、React 等开源组件构建，请遵循各自许可证。
 
 ---
 
