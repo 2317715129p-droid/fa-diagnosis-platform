@@ -42,7 +42,7 @@
 - **分钟级流式诊断**：日志输入到报告输出 5~15 秒，打字机效果流式渲染。
 - **全离线极简私有化部署**：一条命令完成中心端部署，零外部网络依赖，适配国企内网；支持内网全离线版（内置 Ollama 本地模型）与公网版（在线 API）双部署包。
 - **双模式日志输入**：运维手动粘贴 + Python Agent 自动采集（systemd 托管、5 分钟轮询）。
-- **可复用的内网 Dify 底座**：针对内网无法直接部署外部 API / 在线大模型的限制，且网上无现成「Dify + Docker 直接内网可用」版本，通过给 Dify 加插件补齐能力，整套 Dify + Docker 可在离线内网服务器直接运行，且不限于故障诊断，可复用部署其它工作流。
+- **可复用的内网 Dify 底座**：针对内网无法直接部署外部 API / 在线大模型的限制，且网上无现成「Dify + Docker 直接内网可用」版本，通过给 Dify 加插件补齐能力，整套 Dify + Docker 可在离线内网服务器直接运行，且不限于故障诊断，可复用部署其它工作流（开箱即用压缩包获取方式见下文「📦 开箱即用的内网 Dify 底座」）。
 
 ---
 
@@ -122,6 +122,20 @@ cd frontend && npm install && npm run dev
 ```
 
 > 本地开发需自行准备 Dify 工作流与知识库（见 [dify/workflow](dify/workflow) 与 [dify/knowledge-base](dify/knowledge-base)）。
+
+---
+
+## 📦 开箱即用的内网 Dify 底座（可复用于任意工作流）
+
+本项目在落地过程中，针对**内网无法直接部署外部 API / 在线大模型**的限制，搭建了一套可直接在离线内网服务器运行的 **Dify + Docker 底座**：网上没有现成的「Dify + Docker 直接内网可用」版本，我们通过给 Dify 加插件补齐能力，使其整套栈（编排 + RAG + 插件）可在无公网环境原生运行。
+
+该底座**不限于故障诊断**——你可以用它直接在内网部署自己的其它工作流（客服问答、知识库、文档处理等），无需重复踩离线部署的坑。
+
+**开箱即用**：直接下载我们打包好的内网 Dify 底座压缩包（含 Dify 镜像与所需插件），解压后按包内说明一键启动，再导入你自己的工作流即可复用：
+
+👉 **【待补充：将内网 Dify 底座压缩包上传至夸克网盘后，在此粘贴分享链接】**
+
+> 注：该压缩包仅含可复用的 Dify 底座，不含本项目的 FA 诊断业务；如需 FA 诊断请走上方「方式二」的 `fa.tar` 离线包。
 
 ---
 
@@ -260,6 +274,16 @@ cd /opt/fa && sudo bash install-all.sh <SERVER_IP>
 ```
 
 After deployment: FA frontend `http://<IP>:3000`, Dify console `http://<IP>:80`, FA backend `http://<IP>:8000`.
+
+### Turnkey offline Dify foundation (reusable for any workflow)
+
+While building this project we hit a common intranet constraint: external APIs and hosted LLMs are blocked, and no turnkey "Dify + Docker that just runs on the intranet" image exists publicly. We extended Dify with custom plugins so the whole stack (orchestration + RAG + plugins) runs natively on air-gapped servers. This foundation is **not limited to fault diagnosis** — you can deploy your own workflows (support bot, knowledge base, document processing, etc.) on it without re-solving offline deployment.
+
+**Get the turnkey package**: download our prebuilt intranet Dify foundation archive (Dify images + required plugins), extract, start it per the included instructions, then import your own workflow DSL to reuse it:
+
+👉 **[TODO: paste the Quark netdisk share link for the intranet Dify base archive here]**
+
+> Note: this archive contains only the reusable Dify foundation, not the FA diagnosis business logic. For FA diagnosis use the `fa.tar` offline bundle in 方式二 above.
 
 ### Docs
 
