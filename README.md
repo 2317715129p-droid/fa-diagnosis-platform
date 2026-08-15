@@ -11,10 +11,13 @@
 ![Offline](https://img.shields.io/badge/deployment-fully--offline-orange)
 ![Lang](https://img.shields.io/badge/语言-中文%20%7C%20EN-brightgreen)
 
-> 🎬 **演示**：录制一段约 15 秒的诊断 GIF 放到 `docs/assets/demo.gif` 后，取消下面注释即可显示。
-> `<!-- ![演示：5~15 秒插槽级诊断](../docs/assets/demo.gif) -->`
+> 🎬 **演示（15 秒，插槽级诊断流式输出）**：
 
-> 📸 界面截图与演示录屏待补充（运行中的 FA 前端实测界面）。
+<video src="docs/assets/demo.mp4" autoplay muted loop playsinline width="800">您的浏览器不支持视频播放，请下载 demo.mp4 查看。</video>
+
+> 📸 **运行中的 FA 前端实测界面**：
+
+![FA 前端实测界面](docs/assets/screenshot-diagnosis.png)
 
 [English](README.md#english) · [架构设计](docs/架构设计.md) · [综合技术报告](docs/技术报告.md) · [部署与测试报告](docs/部署与测试报告.md) · [离线部署手册](docs/离线部署手册.md)
 
