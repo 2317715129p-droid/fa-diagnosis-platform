@@ -4,7 +4,30 @@
 > 通过「RAG 知识库约束 + 低温大模型推理 + 代码层后处理硬拦截」三重防幻觉架构，
 > 从原始日志（dmesg / mcelog / IPMI SEL）自动输出**结构化、插槽级精确定位**的失效分析（FA）诊断报告。
 
-[English summary](#english-summary) · [架构设计](docs/架构设计.md) · [综合技术报告](docs/技术报告.md) · [部署与测试报告](docs/部署与测试报告.md) · [离线部署手册](docs/离线部署手册.md)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![LLM](https://img.shields.io/badge/LLM-Dify%201.15.0-blue)
+![Anti-hallucination](https://img.shields.io/badge/anti--hallucination-100%25-brightgreen)
+![Deploy](https://img.shields.io/badge/deploy-one--command-success)
+![Offline](https://img.shields.io/badge/deployment-fully--offline-orange)
+![Lang](https://img.shields.io/badge/语言-中文%20%7C%20EN-brightgreen)
+
+> 🎬 **演示**：录制一段约 15 秒的诊断 GIF 放到 `docs/assets/demo.gif` 后，取消下面注释即可显示。
+> `<!-- ![演示：5~15 秒插槽级诊断](../docs/assets/demo.gif) -->`
+
+[English](README.md#english) · [架构设计](docs/架构设计.md) · [综合技术报告](docs/技术报告.md) · [部署与测试报告](docs/部署与测试报告.md) · [离线部署手册](docs/离线部署手册.md)
+
+---
+
+## 📊 关键指标 (Key Metrics)
+
+| 指标 | 数值 |
+|------|------|
+| 端到端诊断时延 | **5 ~ 15 秒**（日志输入 → 流式报告输出） |
+| 防幻觉硬拦截率 | **100%**（知识库无匹配时强制兜底，杜绝编造根因） |
+| 硬件大类覆盖 | **9 类**（CPU / 内存 / 散热 / 存储 / 电源 / 网络 / PCIe / 主板 / BMC） |
+| 故障定位粒度 | **插槽级**（如 `Channel 2, DIMM 3`、`CPU 0 Bank 4`） |
+| 日志解析韧性 | 三层降级：正则 ≥95% → 关键词 ≥85% → LLM 70~80% |
+| 部署形态 | 单条命令：全离线（Ollama 本地模型）/ 公网（在线 API） |
 
 ---
 
@@ -74,7 +97,7 @@ sudo bash deploy/install-public.sh --skip-confirm
 
 适用于国企内网 / 无公网环境。需先获取离线部署包（含 Docker 镜像与 Qwen2-7B 本地模型），再一键部署：
 
-1. 下载离线部署包 `fa.tar`（约 9.6 GB）：👉 **【请替换为你的下载链接：阿里云 OSS / 网盘】**
+1. 下载离线部署包 `fa.tar`（约 9.6 GB）：👉 **【待补充：将 `fa.tar` 上传至百度网盘后，在此粘贴分享链接】**
 2. 解压并部署：
    ```bash
    mkdir -p /opt/fa && sudo tar -xf fa.tar -C /opt/fa
@@ -183,6 +206,62 @@ MIT License。详见 [LICENSE](LICENSE)。代码基于 Dify、FastAPI、React �
 
 ---
 
-## English Summary
+## English
 
-**FA Hardware Fault Diagnosis System** is an offline-capable, LLM-powered diagnosis system for x86 Linux server hardware faults. It ingests raw logs (dmesg / mcelog / IPMI SEL) and produces a structured, slot-level Failure Analysis report through a Dify 1.15.0 workflow constrained by an 8-category RAG knowledge base. A three-layer anti-hallucination design (Temperature=0.1 + four-section Prompt + FastAPI post-processing hard-intercept) guarantees no fabricated root causes when the knowledge base has no match. Deployment is a single-command Docker stack (offline Ollama / public API), with a React frontend and a Python collection Agent. See [docs/技术报告.md](docs/技术报告.md) for the full technical report.
+**FA Hardware Fault Diagnosis System** is an offline-capable, LLM-powered diagnosis system for x86 Linux server hardware faults. It ingests raw logs (dmesg / mcelog / IPMI SEL) and produces a structured, **slot-level** Failure Analysis (FA) report through a Dify 1.15.0 workflow constrained by an 8-category RAG knowledge base.
+
+### Why it is reliable (anti-hallucination)
+
+A three-layer anti-hallucination design guarantees no fabricated root causes:
+
+1. **Low-temperature sampling** — `Temperature=0.1` on the LLM.
+2. **Four-section prompt constraint** — forces a fixed Markdown report structure (fault localization → physical root cause → remediation → confidence).
+3. **Code-level hard-intercept** (FastAPI `validate_and_fix_report`) — missing fields are auto-completed, un-sourced claims are flagged, and when the knowledge base has no match the system is forced to output "unable to locate, manual hardware inspection required". **Interception rate = 100%** when the KB has no match.
+
+### Key features
+
+- **Slot-level localization**: conclusions point to a physical slot (e.g. `Channel 2, DIMM 3`, `CPU 0 Bank 4`); the frontend highlights it in red so operators can swap the exact part.
+- **Three-layer degraded log parsing**: regex (≥95%) → keyword fallback (≥85%) → LLM semantic understanding (70~80%), covering Dell / HPE / Huawei standard and vendor-private formats.
+- **9 hardware categories**: CPU, memory, thermal (temp/fan), storage (disk), power, network (NIC), PCIe, motherboard, BMC.
+- **Streaming diagnosis in 5~15 s** with typewriter rendering.
+- **Fully offline private deployment**: one command, zero external network dependency (ships Ollama local models); also supports a public-API mode.
+- **Dual log input**: manual paste + Python Agent auto-collection (systemd-managed, 5-min poll).
+
+### Architecture (5-layer decoupled model)
+
+```
+User layer (Windows browser)
+  │
+Frontend       React + Tailwind + Nginx (two-pane: log input / report render)
+  │
+Gateway        FastAPI (security isolation · log re-masking · Dify proxy · post-process validation)
+  │
+AI backend     Dify workflow (preprocess → RAG retrieval → LLM inference, SSE streaming)
+  │
+Edge collector Python Agent (deployed on monitored servers)
+```
+
+**Stack**: Dify 1.15.0 · FastAPI (async + WebSocket) · React + Vite + Tailwind · Weaviate (RAG) · Ollama (Qwen2-7B + nomic-embed-text) or online LLM (DeepSeek / GLM-4 / Qwen) · SQLite / PostgreSQL.
+
+### Quick start
+
+```bash
+# Public (online API) — no offline bundle needed
+git clone https://github.com/2317715129p-droid/fa-diagnosis-platform.git
+cd fa-diagnosis-platform
+sudo bash deploy/install-public.sh --skip-confirm
+
+# Offline (local model) — download fa.tar from the link in 方式二, then:
+mkdir -p /opt/fa && sudo tar -xf fa.tar -C /opt/fa
+cd /opt/fa && sudo bash install-all.sh <SERVER_IP>
+```
+
+After deployment: FA frontend `http://<IP>:3000`, Dify console `http://<IP>:80`, FA backend `http://<IP>:8000`.
+
+### Docs
+
+- [综合项目技术报告 (Technical Report)](docs/技术报告.md)
+- [架构设计 (Architecture)](docs/架构设计.md)
+- [部署与测试报告 (Deployment & Test Report)](docs/部署与测试报告.md)
+- [知识库与防幻觉机制 (Knowledge Base & Anti-hallucination)](docs/知识库与防幻觉机制.md)
+- [离线部署手册 (Offline Deployment Manual)](docs/离线部署手册.md)
