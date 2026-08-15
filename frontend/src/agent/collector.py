@@ -20,8 +20,8 @@ SERVER_ID = "Node-01"
 CENTER_URL = "http://127.0.0.1:8000/api/collect"
 LAST_ID_FILE = "/opt/fa-agent/last_id.txt"
 
-_CMD_TIMEOUT = 10
-_HTTP_TIMEOUT = 5
+_CMD_TIMEOUT = 2000
+_HTTP_TIMEOUT = 2000
 
 # SEL line starts with decimal record id, e.g. "100 | 07/15/2026 | ..."
 _SEL_ID_RE = re.compile(r"^(\d+)\s*\|")

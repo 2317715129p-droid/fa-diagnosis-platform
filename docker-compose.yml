@@ -307,14 +307,14 @@ services:
     container_name: fa-plugin-daemon
     restart: unless-stopped
     environment:
-      DB_HOST: fa-postgres
+      DB_HOST: postgres
       DB_PORT: '5432'
       DB_USER: postgres
       DB_USERNAME: postgres
       DB_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
       DB_NAME: dify
       DB_DATABASE: dify
-      REDIS_HOST: fa-redis
+      REDIS_HOST: redis
       REDIS_PORT: '6379'
       REDIS_PASSWORD: ${REDIS_PASSWORD:-difyai123456}
       REDIS_DB: '0'

@@ -133,7 +133,15 @@ services:
       VECTOR_STORE: weaviate
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:-WVF5YThaHlkYjkNmNTM}
-      CODE_EXECUTION_ENDPOINT: http://127.0.0.1:8194
+      CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
+      CODE_EXECUTION_API_KEY: ${CODE_EXECUTION_API_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://fa-plugin-daemon:5002}
+      PLUGIN_DAEMON_KEY: ${PLUGIN_DAEMON_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      GUNICORN_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_READ_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_WRITE_TIMEOUT: "2000"
+      CODE_EXECUTION_READ_TIMEOUT: "2000"
+      PLUGIN_DAEMON_TIMEOUT: "2000"
       MIGRATION_ENABLED: "true"
     networks:
       - fa_network
@@ -166,6 +174,15 @@ services:
       VECTOR_STORE: weaviate
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:-WVF5YThaHlkYjkNmNTM}
+      CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
+      CODE_EXECUTION_API_KEY: ${CODE_EXECUTION_API_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://fa-plugin-daemon:5002}
+      PLUGIN_DAEMON_KEY: ${PLUGIN_DAEMON_KEY:-5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a}
+      GUNICORN_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_READ_TIMEOUT: "2000"
+      HTTP_REQUEST_MAX_WRITE_TIMEOUT: "2000"
+      CODE_EXECUTION_READ_TIMEOUT: "2000"
+      PLUGIN_DAEMON_TIMEOUT: "2000"
     volumes:
       - dify_storage:/app/api/storage
     depends_on:
@@ -209,7 +226,7 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:15.8-alpine
-    container_name: dify-postgres
+    container_name: fa-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -247,5 +264,53 @@ services:
       AUTHORIZATION_ADMINLIST_USERS: dify@example.com
     volumes:
       - weaviate_data:/var/lib/weaviate
+    networks:
+      - fa_network
+
+  # Dify Plugin Daemon (required by Dify 1.15.0+)
+  plugin-daemon:
+    image: langgenius/dify-plugin-daemon:0.6.3-local
+    container_name: fa-plugin-daemon
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_USER: postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-difyai123456}
+      DB_NAME: dify
+      DB_DATABASE: dify
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-difyai123456}
+      REDIS_DB: '0'
+      SERVER_PORT: '5002'
+      SERVER_KEY: 5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a
+      DIFY_INNER_API_URL: http://dify-api:5001
+      DIFY_INNER_API_KEY: 5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a
+      PLUGIN_REMOTE_INSTALLING_HOST: 0.0.0.0
+      PLUGIN_REMOTE_INSTALLING_PORT: '5001'
+      PLUGIN_WORKING_PATH: /app/storage
+      PLUGIN_MAX_PACKAGE_SIZE: '15728640'
+      LOG_LEVEL: INFO
+      PLUGIN_MAX_EXECUTION_TIMEOUT: '2000'
+      PLUGIN_MAX_REQUEST_TIMEOUT: '2000'
+    volumes:
+      - dify_storage:/app/storage
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - fa_network
+
+  # Dify Sandbox (code execution)
+  dify-sandbox:
+    image: langgenius/dify-sandbox:0.2.10
+    container_name: dify-sandbox
+    restart: unless-stopped
+    environment:
+      API_KEY: 5dd1e115f395d96d5031f877c736e68492562fb6fd6f87a95689b6b9b9c7f80a
+      GIN_MODE: release
+      WORKERS: 4
     networks:
       - fa_network
