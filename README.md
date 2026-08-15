@@ -13,7 +13,9 @@
 
 > 🎬 **演示（15 秒，插槽级诊断流式输出）**：
 
-<video src="docs/assets/demo.mp4" autoplay muted loop playsinline width="800">您的浏览器不支持视频播放，请下载 demo.mp4 查看。</video>
+![演示：5~15 秒插槽级诊断](docs/assets/demo.gif)
+
+> 完整高清视频（含音频）：[demo.mp4](docs/assets/demo.mp4)
 
 > 📸 **运行中的 FA 前端实测界面**：
 
