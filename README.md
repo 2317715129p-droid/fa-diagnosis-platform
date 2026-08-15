@@ -14,6 +14,8 @@
 > 🎬 **演示**：录制一段约 15 秒的诊断 GIF 放到 `docs/assets/demo.gif` 后，取消下面注释即可显示。
 > `<!-- ![演示：5~15 秒插槽级诊断](../docs/assets/demo.gif) -->`
 
+> ⚠️ **截图占位提醒（推送前必看）**：`docs/assets/ui-diagnose.png` 实际是后端测试的 PowerShell 终端截图，且包含**本地路径 `D:\idex>`** 与**内网 IP `192.168.1.100`**（与匿名化原则冲突），**不是**前端 UI；`ui-translate.jpg` 是通用芯片图标，**也不是**实际界面。两者都**不要**放到 README 顶部或公开仓库。推送前请用运行中的 FA 前端重拍 1~2 张真实界面截图放到 `docs/assets/ui-*.png`，或将这两个误导文件从公开仓库移除。
+
 [English](README.md#english) · [架构设计](docs/架构设计.md) · [综合技术报告](docs/技术报告.md) · [部署与测试报告](docs/部署与测试报告.md) · [离线部署手册](docs/离线部署手册.md)
 
 ---
