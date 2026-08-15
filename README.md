@@ -100,7 +100,7 @@ sudo bash deploy/install-public.sh --skip-confirm
 
 适用于国企内网 / 无公网环境。需先获取离线部署包（含 Docker 镜像与 Qwen2-7B 本地模型），再一键部署：
 
-1. 下载离线部署包 `fa.tar`（约 9.6 GB）：👉 **【待补充：将 `fa.tar` 上传至百度网盘后，在此粘贴分享链接】**
+1. 下载离线部署包 `fa.tar`（约 9.6 GB）：👉 https://pan.quark.cn/s/305eb2683bec （夸克口令：`/~ce043aDlAX~:/`）
 2. 解压并部署：
    ```bash
    mkdir -p /opt/fa && sudo tar -xf fa.tar -C /opt/fa
@@ -131,11 +131,11 @@ cd frontend && npm install && npm run dev
 
 该底座**不限于故障诊断**——你可以用它直接在内网部署自己的其它工作流（客服问答、知识库、文档处理等），无需重复踩离线部署的坑。
 
-**开箱即用**：直接下载我们打包好的内网 Dify 底座压缩包（含 Dify 镜像与所需插件），解压后按包内说明一键启动，再导入你自己的工作流即可复用：
+**开箱即用**：直接下载离线部署包 `fa.tar`（约 9.6 GB，含 Dify 镜像、所需插件与本地模型），解压后按包内说明启动 Dify，导入你自己的工作流 DSL 即可复用这套内网 Dify 底座：
 
-👉 **【待补充：将内网 Dify 底座压缩包上传至夸克网盘后，在此粘贴分享链接】**
+👉 https://pan.quark.cn/s/305eb2683bec （夸克口令：`/~ce043aDlAX~:/`）
 
-> 注：该压缩包仅含可复用的 Dify 底座，不含本项目的 FA 诊断业务；如需 FA 诊断请走上方「方式二」的 `fa.tar` 离线包。
+> 注：该 `fa.tar` 同时包含本项目的 FA 诊断业务与可复用的内网 Dify 底座——你既可以按「方式二」直接跑 FA 诊断，也可以导入自己的其它工作流，把它当作通用内网 Dify 平台使用。
 
 ---
 
@@ -279,11 +279,11 @@ After deployment: FA frontend `http://<IP>:3000`, Dify console `http://<IP>:80`,
 
 While building this project we hit a common intranet constraint: external APIs and hosted LLMs are blocked, and no turnkey "Dify + Docker that just runs on the intranet" image exists publicly. We extended Dify with custom plugins so the whole stack (orchestration + RAG + plugins) runs natively on air-gapped servers. This foundation is **not limited to fault diagnosis** — you can deploy your own workflows (support bot, knowledge base, document processing, etc.) on it without re-solving offline deployment.
 
-**Get the turnkey package**: download our prebuilt intranet Dify foundation archive (Dify images + required plugins), extract, start it per the included instructions, then import your own workflow DSL to reuse it:
+**Get the turnkey package**: download the offline bundle `fa.tar` (~9.6 GB, Dify images + required plugins + local model), extract, start Dify per the included instructions, then import your own workflow DSL to reuse this intranet Dify foundation:
 
-👉 **[TODO: paste the Quark netdisk share link for the intranet Dify base archive here]**
+👉 https://pan.quark.cn/s/305eb2683bec (Quark code: `/~ce043aDlAX~:/`)
 
-> Note: this archive contains only the reusable Dify foundation, not the FA diagnosis business logic. For FA diagnosis use the `fa.tar` offline bundle in 方式二 above.
+> Note: this `fa.tar` actually bundles BOTH the FA diagnosis business logic AND the reusable intranet Dify foundation — you can either run FA diagnosis directly via 方式二 above, or import your own workflows and use it as a general-purpose intranet Dify platform.
 
 ### Docs
 
